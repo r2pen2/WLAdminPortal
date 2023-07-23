@@ -19,8 +19,8 @@ app.use(fileUpload());
 dotenv.config();
 
 // Start listening on defined port
-app.listen(3003, () => {
-    console.log('Now listening on port ' + 3003);
+app.listen(25565, () => {
+    console.log('Now listening on port ' + 25565);
 });
 
 // Serve static files
@@ -37,12 +37,9 @@ app.use("/site-images", siteImages);
 // Server site models
 app.use("/site-models", siteModels);
 
-app.get("/images/*", (req, res) => {
-    res.sendFile(__dirname + req._parsedOriginalUrl.path);
-})
-
+// Allow post to /images, placing an image in the static folder
 app.post("/images/*", (req, res) => {
-    const targetPath = __dirname + req._parsedUrl.path;
+    const targetPath = __dirname + "static/" + req._parsedUrl.path;
     fs.writeFile(targetPath, req.files.file.data, (err) => {
         if (err) {
             console.log(err);

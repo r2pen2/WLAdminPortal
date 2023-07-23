@@ -1,7 +1,7 @@
+// Library Imports
 import { createTheme } from "@nextui-org/react";
 
-const white = "#ffffff";
-
+/** Default NextUI compatible theme object (lightmode only for now) */
 export const theme = createTheme({
   type: "light", // it could be "light" or "dark"
   theme: {
@@ -14,7 +14,7 @@ export const theme = createTheme({
       primaryBorder: "$purple500",
       primaryBorderHover: "$purple600",
       primarySolidHover: "$purple700",
-      primarySolidContrast: white,
+      primarySolidContrast: "#ffffff",
       primaryShadow: "$purple600",
 
       success: "#A6C437",
