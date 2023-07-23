@@ -1,0 +1,14 @@
+{
+  "files": {
+    "main.css": "/static/css/main.0fb4700f.css",
+    "main.js": "/static/js/main.c534f878.js",
+    "static/media/power-brick.gif": "/static/media/power-brick.e4a20717c79c08149a40.gif",
+    "index.html": "/index.html",
+    "main.0fb4700f.css.map": "/static/css/main.0fb4700f.css.map",
+    "main.c534f878.js.map": "/static/js/main.c534f878.js.map"
+  },
+  "entrypoints": [
+    "static/css/main.0fb4700f.css",
+    "static/js/main.c534f878.js"
+  ]
+}
