@@ -1,9 +1,6 @@
-[submodule "client/libraries/Web-Legos"]
-	path = client/src/libraries/Web-Legos
-	url = https://github.com/r2pen2/Web-Legos.git
-[submodule "client/src/libraries/Web-Legos"]
-	path = client/src/libraries/Web-Legos
-	url = https://github.com/r2pen2/Web-Legos.git
 [submodule "libraries/Server-Legos"]
 	path = libraries/Server-Legos
 	url = https://github.com/r2pen2/Server-Legos.git
+[submodule "client/src/libraries/Web-Legos"]
+	path = client/src/libraries/Web-Legos
+	url = https://github.com/r2pen2/Web-Legos.git
