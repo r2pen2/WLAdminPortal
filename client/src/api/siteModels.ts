@@ -25,11 +25,11 @@ export class AvailableSite extends SiteModel implements FirestoreSerializable {
   }
 
   static examples = {
-    default: (new ExampleModel()).fillConstantExampleData().toFirestore(),
+    default: (new AvailableSite()).fillConstantExampleData().toFirestore(),
   }
 
-  fromFirestore(data: any) : ExampleModel {
-    const e = new ExampleModel();
+  fromFirestore(data: any) : AvailableSite {
+    const e = new AvailableSite();
     e.id = data.id;
     e.booleans.booleanExample = data.booleanExample;
     e.images.imageExample = data.imageExample;
