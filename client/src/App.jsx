@@ -7,7 +7,7 @@ import powerBrick from "./assets/images/power-brick.gif";
 import { Text } from '@nextui-org/react';
 import Navbar from './components/Navbar';
 import { createContext, useState } from 'react';
-import { AvailableSite } from './api/siteModels.ts';
+import { AvailableSite } from './libraries/Web-Legos/api/admin.ts';
 
 export const CurrentSiteContext = createContext();
 export const UserSitesContext = createContext();
