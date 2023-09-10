@@ -1,7 +1,8 @@
 import React, { useContext, useEffect, useRef, useState } from 'react'
-import { Divider, Link, Navbar as NextUINavbar, Text, Tooltip } from "@nextui-org/react"
+import { Divider, Navbar as NextUINavbar, Text, Tooltip } from "@nextui-org/react"
 import { CurrentSiteContext, UserSitesContext } from '../App'
 import {WLNavBrandCenter, WLNavBrandLeft, WLNavContent} from "../libraries/Web-Legos/components/Navigation";
+import TabNavbar from './TabNavbar';
 
 export default function Navbar() {
 
@@ -74,6 +75,11 @@ export default function Navbar() {
     isSideMenuOpen && navbarToggleRef.current.click();
   }
 
+  function goToSite(e) {
+    e.preventDefault();
+    window.open(currentSite.url, "_blank")
+  }
+
   return (
     <NextUINavbar
       variant="sticky"
@@ -85,19 +91,23 @@ export default function Navbar() {
             className="px-3"
             ref={navbarToggleRef}
             onChange={(s) => setIsSideMenuOpen(s)}
-            
           />
-          <div className="d-none d-md-flex flex-row align-items-center justify-content-center w-100">          
-            <WLNavBrandLeft title={currentSite.title} source={currentSite.logoSource} showIn="md"/>
+          <div className="d-none d-md-flex flex-row align-items-center justify-content-center w-100" onClick={goToSite} style={{cursor: 'pointer'}}>         
+            <WLNavBrandLeft title={currentSite.title} source={currentSite.logoSource} showIn="md" onClick={goToSite}/>
             <Divider style={{width: 50}} className="mx-3" />
             <StatusIcon />
           </div>
         </WLNavContent.Left>
-        <div className="d-flex d-md-none flex-column align-items-end justify-content-center w-100">          
-          <WLNavBrandCenter title={currentSite.title} />
+        <div className="d-flex d-md-none flex-column align-items-end justify-content-center w-100" onClick={goToSite} style={{cursor: 'pointer'}}>       
+          <WLNavBrandCenter title={currentSite.title} onClick={goToSite} />
           <Text b color={getStatusColor()}>{getStatusBrief()}</Text>
         </div>
       </WLNavContent>
+      <div className="d-none d-md-flex">
+        <WLNavContent.Right>
+          <TabNavbar />
+        </WLNavContent.Right>
+      </div>
       <NextUINavbar.Collapse>
         {userSites.map((site, index) => (
           <NextUINavbar.CollapseItem key={index}>
