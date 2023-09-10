@@ -1,32 +1,26 @@
 // @ts-ignore
 import { FirestoreSerializable, SiteModel } from "../libraries/Web-Legos/api/models.ts";
 
-export class ExampleModel extends SiteModel implements FirestoreSerializable {
+export class AvailableSite extends SiteModel implements FirestoreSerializable {
   constructor() {
-    super("example-models", "Example Model")
+    super("available-sites", "AvailableSite")
   }
   booleans = {
-    booleanExample: true,
   }
   images = {
-    imageExample: "",
+    logoSource: "",
   }
   numbers = {
-    order: 0,
   }
   shortStrings = {
-    shortStringExample: ""
+    title: ""
   }
   longStrings = {
-    longStringExample: "",
   }
   
   fillConstantExampleData() {
-    this.booleans.booleanExample = true;
-    this.images.imageExample = "https://ih1.redbubble.net/image.3309736636.6267/st,small,507x507-pad,600x600,f8f8f8.jpg";
-    this.numbers.order = 1;
-    this.shortStrings.shortStringExample = "Hello, World!";
-    this.longStrings.longStringExample = "Greetings to the Earth and all who inhabit it.";
+    this.images.logoSource = "https://beyondthebelleducation.com/static/media/logoTransparentBlack.79c1457b6c1da17b2b6a.png";
+    this.shortStrings.title = "Beyond The Bell Education";
     return this;
   }
 
