@@ -7,18 +7,24 @@ import powerBrick from "./assets/images/power-brick.gif";
 import { Text } from '@nextui-org/react';
 import Navbar from './components/Navbar';
 import { createContext, useState } from 'react';
+import { AvailableSite } from './api/siteModels.ts';
 
 export const CurrentSiteContext = createContext();
+export const UserSitesContext = createContext();
+
+
+const BTB = AvailableSite.examples.default;
+const YCD = AvailableSite.examples.alternate;
 
 function App() {
 
-  const [currentSite, setCurrentSite] = useState({
-    title: "Test Site",
-    logoSource: "https://beyondthebelleducation.com/static/media/logoTransparentBlack.79c1457b6c1da17b2b6a.png"
-  })
+  const [userSites, setUserSites] = useState([BTB, YCD]);
+
+  const [currentSite, setCurrentSite] = useState(BTB)
 
   return (
     <CurrentSiteContext.Provider value={{currentSite, setCurrentSite}} >
+    <UserSitesContext.Provider value={{userSites, setUserSites}} >
       <div className="App d-flex flex-column align-items-center w-100">
         <Router>
           <div className="app-content">
@@ -34,6 +40,7 @@ function App() {
           </div>
         </Router>
       </div>
+    </UserSitesContext.Provider>
     </CurrentSiteContext.Provider>
   );
 }

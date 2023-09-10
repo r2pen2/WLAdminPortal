@@ -13,29 +13,28 @@ export class AvailableSite extends SiteModel implements FirestoreSerializable {
   numbers = {
   }
   shortStrings = {
-    title: ""
+    title: "",
+    url: ""
   }
   longStrings = {
   }
   
-  fillConstantExampleData() {
-    this.images.logoSource = "https://beyondthebelleducation.com/static/media/logoTransparentBlack.79c1457b6c1da17b2b6a.png";
-    this.shortStrings.title = "Beyond The Bell Education";
+  fillConstantExampleData(alt?: boolean) {
+    this.images.logoSource = alt ? "https://www.youcandoitgardening.com/static/media/logoNoText.ea403d4785551ef75409.png" : "https://beyondthebelleducation.com/static/media/logoTransparentBlack.79c1457b6c1da17b2b6a.png";
+    this.shortStrings.title = alt ? "You Can Do It Gardening" : "Beyond The Bell Education";
+    this.shortStrings.url = alt ? "https://www.youcandoitgardening.com/" : "https://www.beyondthebelleducation.com/";
     return this;
   }
 
   static examples = {
     default: (new AvailableSite()).fillConstantExampleData().toFirestore(),
+    alternate: (new AvailableSite()).fillConstantExampleData(true).toFirestore(),
   }
 
   fromFirestore(data: any) : AvailableSite {
-    const e = new AvailableSite();
-    e.id = data.id;
-    e.booleans.booleanExample = data.booleanExample;
-    e.images.imageExample = data.imageExample;
-    e.shortStrings.shortStringExample = data.shortStringExample;
-    e.longStrings.longStringExample = data.longStringExample;
-    e.numbers.order = data.order;
-    return e;
+    const instance = new AvailableSite();
+    instance.images.logoSource = data.logoSource;
+    instance.shortStrings.title = data.title;
+    return instance;
   }
 }
