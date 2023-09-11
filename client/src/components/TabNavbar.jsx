@@ -53,7 +53,7 @@ export default function TabNavbar() {
     };
 
   return (
-    <AppBar position="absolute" sx={{top: "auto", bottom: 0}}>
+    <AppBar position="fixed" sx={{top: "auto", bottom: 0}}>
       <BottomNavigation sx={{width: "100%"}} value={currentTab} onChange={handleChange}>
         {
           siteModules[currentSite.siteKey].sort().map((m, i) => {

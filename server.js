@@ -88,6 +88,7 @@ app.get("/external-forms", (req, res) => {
         res.send(403)
     })
 })
+
 app.get("/external-users", (req, res) => {
     const siteId = req.query.siteId;
     const accessToken = req.query.accessToken;
@@ -110,7 +111,7 @@ app.get("/external-users", (req, res) => {
         }
         const userEmail = decodedToken.email;
         // TODO: Before this fetch, scrape AvailableSites to make sure this user has access to the requested user deck
-        fetch(`${url}/site-users?key=${secret}`).then(externalRes => {
+        fetch(`${url}/site-auth?key=${secret}`).then(externalRes => {
             externalRes.json().then(json => {
                 res.json(json);
             })
@@ -118,6 +119,47 @@ app.get("/external-users", (req, res) => {
     }).catch(err => {
         res.send(403)
     })
+})
+
+app.post("/external-users", (req, res) => {
+    auth.verifyIdToken(req.body.accessToken).then(decodedToken => {
+        // We made it through!
+        let secret = null;
+        let url = null;
+        switch (req.body.siteId) {
+            case "BTB":
+                secret = process.env.BTBUSERKEY;
+                url = "https://www.beyondthebelleducation.com"
+                break;
+            case "YCD":
+                secret = process.env.YCDUSERKEY;
+                url = "https://www.youcandoitgardening.com"
+                break;
+            default:
+                break;
+        }
+        const userEmail = decodedToken.email;
+        // TODO: Before this fetch, scrape AvailableSites to make sure this user has access to the requested user deck
+        const postBody = {
+            key: secret,
+            email: req.body.email,
+            field: req.body.field,
+            value: req.body.value,
+          }
+        fetch(`${url}/site-auth`, {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json"
+            },
+            body: JSON.stringify(postBody)
+          }).then((response) => {
+            console.log(response)
+            res.sendStatus(response.status)
+          });
+        }).catch((error) => {
+            console.log(error)
+            res.sendStatus(404)
+        })
 })
 
 // Serve React build

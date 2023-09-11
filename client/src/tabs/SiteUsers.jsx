@@ -3,9 +3,10 @@ import { CurrentSiteContext, CurrentUserContext } from '../App';
 import { FormResponse } from '../libraries/Web-Legos/api/admin.ts';
 import { WLNavContent } from '../libraries/Web-Legos/components/Navigation';
 import { VerticalDivider, WLSpinnerPage } from '../libraries/Web-Legos/components/Layout';
-import {Text, Divider, Modal, Button } from "@nextui-org/react"
+import {Text, Divider, Modal, Button, Spinner, Loading } from "@nextui-org/react"
 import { DataGrid } from "@mui/x-data-grid"
-import { getTimeOfDay } from '../libraries/Web-Legos/api/strings';
+import { sortFieldsAlphabetically } from '../libraries/Web-Legos/api/sorting';
+import { Checkbox, Paper, Table, TableBody, TableCell, TableContainer, TableHead, TableRow } from '@mui/material';
 
 export default function SiteUsers() {
   
@@ -17,74 +18,95 @@ export default function SiteUsers() {
 
   const minColumnWidth = 200;
 
-  React.useEffect(() => {
-    currentUser.getIdToken(true).then(idToken => {
-      fetch(`http://localhost:25565/external-users?siteId=${currentSite.siteKey}&accessToken=${idToken}`).then((response) => {
-        response.json().then(json => {
-          let newUsers = [];
-          for (const key of Object.keys(json)) {
-            const res = json[key];
-            res.id = key;
-            newUsers.push(res);
-          }
-          setUsers(newUsers.sort((a, b) => a.displayName - b.displayName));
-        })
+function getUsers () {
+  currentUser.getIdToken(true).then(idToken => {
+    fetch(`http://localhost:25565/external-users?siteId=${currentSite.siteKey}&accessToken=${idToken}`).then((response) => {
+    response.json().then(json => {
+        let newUsers = [];
+        for (const key of Object.keys(json)) {
+          const res = json[key];
+          res.id = key;
+          newUsers.push(res);
+        }
+        setUsers(newUsers.sort((a, b) => a.displayName - b.displayName));
       })
     })
+  })
+}
+  
+  React.useEffect(() => {
+    getUsers()
   }, [])
 
-      function getRows() {
+  if (!users) {
+    return;
+  }
+  
+  function PermissionCheckbox({perm, user}) {
 
-        let rows = [];
-        for (const i in users) {
-          const content = {id: i, "Display Name": users[i].displayName, "Email": users[i].email, ...users[i].permissions};
-          rows.push(content);
-        }
-        return rows;
-      }
+    const [updating, setUpdating] = React.useState();
 
-      
-      function getCols() {
-        let cols = [
-          {
-            field: "Display Name",
-            headerName: "Display Name",
-            width: minColumnWidth
-          },
-          {
-            field: "Email",
-            headerName: "Email",
-            width: minColumnWidth
-          },
-        ];
-        for (const k of Object.keys(users[0].permissions)) {
-          const col = {};
-          col.field = k;
-          col.headerName = k;
-          col.width = minColumnWidth;
-          cols.push(col);
+    function handleCellClick() {
+      currentUser.getIdToken(true).then(idToken => {
+        const postBody = {
+          siteId: currentSite.siteKey,
+          accessToken: idToken,
+          email: user.email,
+          field: perm,
+          value: !user.permissions[perm],
         }
-        return cols;
-      }
+        setUpdating(true);
+        fetch(`http://localhost:25565/external-users`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify(postBody)
+        }).then((response) => {
+          if (response.status === 200) {
+            setUsersFetched(false);
+            getUsers();
+          }
+        });
+      })
+    }
+
+    return updating ? <Loading size='sm' /> : <Checkbox checked={user.permissions[perm]} onClick={handleCellClick}/>
+  }
 
   return (
     <WLSpinnerPage dependencies={[usersFetched]}>
       <div className="px-3 w-100 d-flex flex-column align-items-center justify-content-start">
-        {users && 
-          <DataGrid
-            sx={{width: "100%"}}
-            rows={getRows()}
-            columns={getCols()}
-            initialState={{
-              pagination: {
-                paginationModel: {
-                  pageSize: 5
-                }
+        <TableContainer component={Paper}>
+          <Table aria-label="users-table">
+            <TableHead>
+              <TableRow>
+                <TableCell align="center" colSpan={2}>User Details</TableCell>
+                <TableCell align="center" colSpan={Object.keys(users[0].permissions).length}>Permissions</TableCell>
+              </TableRow>
+              <TableRow>
+                <TableCell>Display Name</TableCell>
+                <TableCell>Email</TableCell>
+                <TableCell>op</TableCell>
+                {Object.keys(sortFieldsAlphabetically(users[0].permissions)).map((k,i) => (k !== "op" && <TableCell key={i}>{k}</TableCell>))}
+              </TableRow>
+            </TableHead>
+            <TableBody>
+              {
+                users.map((user, i) => (
+                  <TableRow key={i}>
+                    <TableCell>{user.displayName}</TableCell>
+                    <TableCell>{user.email}</TableCell>
+                    <TableCell><PermissionCheckbox perm="op" user={user} /></TableCell>
+                    {Object.keys(sortFieldsAlphabetically(user.permissions)).map((permissionKey, pi) => (
+                      (permissionKey !== "op") && <TableCell key={pi}><PermissionCheckbox perm={permissionKey} user={user} /></TableCell>
+                    ))}
+                  </TableRow>
+                ))
               }
-            }}
-            pageSizeOptions={[5]}
-          />
-        }
+            </TableBody>
+          </Table>
+        </TableContainer>
       </div>
     </WLSpinnerPage>
   )
