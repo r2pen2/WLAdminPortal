@@ -34,8 +34,6 @@ export default function TabNavbar() {
     }
   }
 
-  console.log(siteModules[currentSite.siteKey])
-
   return (
     <WLNavContent>
     <WLNavContent.Left>
@@ -49,6 +47,7 @@ export default function TabNavbar() {
             </NextUINavbar.Link>
           {siteModules[currentSite.siteKey].sort().map((m, i) => { return (
             <NextUINavbar.Link 
+              key={i}
               isActive={currentTab === m}
               onClick={() => setCurrentTab(m)}
             >
@@ -70,6 +69,7 @@ export default function TabNavbar() {
             </NextUINavbar.Link>
           {siteModules[currentSite.siteKey].sort().map((m, i) => { return (
             <NextUINavbar.Link 
+              key={i}
               isActive={currentTab === m}
               onClick={() => setCurrentTab(m)}
             >

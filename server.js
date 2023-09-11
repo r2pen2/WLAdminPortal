@@ -8,6 +8,7 @@ const siteText = require('./libraries/Server-Legos/siteText');
 const siteModels = require('./libraries/Server-Legos/siteModels');
 const siteRules = require('./libraries/Server-Legos/siteRules');
 const fileUpload = require('express-fileupload');
+const siteForms = require('./libraries/Server-Legos/siteForms');
 
 // Init express application
 const app = express();
@@ -41,6 +42,8 @@ app.use("/site-models", siteModels);
 app.use("/site-rules", siteRules);
 // Server site mail
 app.use("/site-mail", siteMail);
+// Server site forms
+app.use("/site-forms", siteForms);
 
 // Allow post to /images, placing an image in the static folder
 app.post("/images/*", (req, res) => {

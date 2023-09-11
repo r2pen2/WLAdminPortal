@@ -49,7 +49,7 @@ export default function Navbar() {
   function StatusIcon() {
 
     return (
-      <Tooltip showArrow={true} color={getTooltipColor()} content={getContentMessage()} placement="right">
+      <Tooltip color={getTooltipColor()} content={getContentMessage()} placement="right">
           <div style={{
           borderRadius: "50%",
           height: 15,

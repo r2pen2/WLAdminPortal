@@ -18,11 +18,24 @@ export default function SiteHome() {
     function renderIcon() {
       switch(siteModule) {
         case SiteModule.analytics:
-          return <InsightsIcon style={{fontSize: 64}}/>;
+          return <InsightsIcon style={{fontSize: 64, color: getModuleColor()}}/>;
         case SiteModule.users:
-          return <PeopleIcon style={{fontSize: 64}}/>;
+          return <PeopleIcon style={{fontSize: 64, color: getModuleColor()}}/>;
         case SiteModule.forms:
-          return <AssignmentIcon style={{fontSize: 64}}/>;
+          return <AssignmentIcon style={{fontSize: 64, color: getModuleColor()}}/>;
+        default:
+          return;
+      }
+    }
+
+    function getModuleColor() {
+      switch(siteModule) {
+        case SiteModule.analytics:
+          return "#D41D6D";
+        case SiteModule.users:
+          return "#00AE17";
+        case SiteModule.forms:
+          return "#1777F2";
         default:
           return;
       }
@@ -67,7 +80,7 @@ export default function SiteHome() {
             <VerticalDivider height={40} color="#212529" />
           </div>
           <div className="d-flex flex-column align-items-start justify-content-center">
-            <Text b>
+            <Text b >
               {getModuleText()}
             </Text>
             <Text align="left">
