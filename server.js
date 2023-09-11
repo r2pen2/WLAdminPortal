@@ -77,6 +77,8 @@ app.get("/external-forms", (req, res) => {
             default:
                 break;
         }
+        const userEmail = decodedToken.email;
+        // TODO: Before this fetch, scrape AvailableSites to make sure this user has access to the requested form deck
         fetch(`${url}/site-forms?key=${secret}`).then(externalRes => {
             externalRes.json().then(json => {
                 res.json(json);
