@@ -3,9 +3,9 @@ import { CurrentSiteContext } from '../App';
 import { FormResponse } from '../libraries/Web-Legos/api/admin.ts';
 import { WLNavContent } from '../libraries/Web-Legos/components/Navigation';
 import { VerticalDivider, WLSpinnerPage } from '../libraries/Web-Legos/components/Layout';
-import {Text, Divider} from "@nextui-org/react"
+import {Text, Divider, Modal, Button } from "@nextui-org/react"
 import { DataGrid } from "@mui/x-data-grid"
-import { getSlashDateString, getTimeOfDay } from '../libraries/Web-Legos/api/strings';
+import { getTimeOfDay } from '../libraries/Web-Legos/api/strings';
 
 export default function SiteForms() {
   
@@ -15,9 +15,20 @@ export default function SiteForms() {
   const [formResponses, setFormResponses] = React.useState([]);
 
   React.useEffect(() => {
-    setFormResponses([FormResponse.examples.default, FormResponse.examples.alternate])
-    //FormResponse.getAndSet(formResponses, setFormResponsesFetched)
+    fetch(`http://localhost:25565/external-forms?siteId=${currentSite.siteKey}`).then((response) => {
+      response.json().then(json => {
+        let newResponses = [];
+        for (const key of Object.keys(json)) {
+          const res = json[key];
+          res.id = key;
+          newResponses.push(res);
+        }
+        setFormResponses(newResponses);
+      })
+    })
   }, [])
+
+  const [focusedRow, setFocusedRow] = React.useState(null);
 
   function renderResponses() {
     // Sort responses into buckets by their formId
@@ -30,7 +41,7 @@ export default function SiteForms() {
       sortedResponses[r.formId].push(r);
     }
     for (const responseBucket of Object.keys(sortedResponses)) {
-      sortedResponses[responseBucket] = sortedResponses[responseBucket].sort((a, b) => a.createdAt - b.createdAt);
+      sortedResponses[responseBucket] = sortedResponses[responseBucket].sort((a, b) => b.createdAtSeconds - a.createdAtSeconds);
     }
 
     const minColumnWidth = 200;
@@ -38,11 +49,10 @@ export default function SiteForms() {
     return Object.keys(sortedResponses).map((formId, i) => {
       
       function getRows() {
+
         let rows = [];
         for (const i in sortedResponses[formId]) {
-          /** @type {Date}*/
-          const createdAt = sortedResponses[formId][i].createdAt;
-          const content = {id: i, date: `${getSlashDateString(createdAt)} ${getTimeOfDay(createdAt)}`, ...sortedResponses[formId][i].content};
+          const content = {id: i, Timestamp: sortedResponses[formId][i].createdAt, ...sortedResponses[formId][i].content};
           rows.push(content);
         }
         return rows;
@@ -52,7 +62,7 @@ export default function SiteForms() {
       function getCols() {
         let cols = [
           {
-            field: "date",
+            field: "Timestamp",
             headerName: "Timestamp",
             width: FormResponse.getFieldWidth("Timestamp") ? FormResponse.getFieldWidth("Timestamp") : minColumnWidth
           }
@@ -68,8 +78,38 @@ export default function SiteForms() {
         return cols;
       }
       
+      function handleCellClick(e) {
+        setFocusedRow(e.row)
+      }
+
+      function renderFocusedRow() {
+        if (!focusedRow) {return;}
+        const sortedKeys = Object.keys(focusedRow).sort()
+        return sortedKeys.map((k, i) => {
+          return (k !== "id") && <div key={i} className='w-100 py-2 flex-column align-items-start justify-content-start'>
+            <Text b>
+              {k}
+            </Text>
+            <Text>
+              {focusedRow[k]}
+            </Text>
+          </div>
+        })
+      }
+
+
       return (
         <div key={i} className="px-3 w-100 d-flex flex-column align-items-center justify-content-start">
+          <Modal
+            open={focusedRow}
+            onClose={() => setFocusedRow(null)}
+            className="p-3 d-flex flex-column align-items-center justify-content-center"
+          >
+            {renderFocusedRow()}
+            <Button flat color="error" onClick={() => setFocusedRow(null)}>
+              Close
+            </Button>
+          </Modal>
           <div className="w-100 d-flex flex-row">
             <Text b align="left">
               {sortedResponses[formId][0].formTitle}
@@ -77,6 +117,7 @@ export default function SiteForms() {
           </div>
           <Divider css={{marginBottom: "0.5rem"}}/>
           <DataGrid
+            onRowClick={handleCellClick}
             sx={{width: "100%"}}
             rows={getRows()}
             columns={getCols()}

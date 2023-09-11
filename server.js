@@ -1,14 +1,15 @@
+const fetch = require('node-fetch')
+
 const express = require('express');
 const bodyParser = require('body-parser');
 const dotenv = require('dotenv');
 const cors = require('cors');
 const fs = require('fs');
-const siteImages = require('./libraries/Server-Legos/siteImages');
-const siteText = require('./libraries/Server-Legos/siteText');
-const siteModels = require('./libraries/Server-Legos/siteModels');
 const siteRules = require('./libraries/Server-Legos/siteRules');
 const fileUpload = require('express-fileupload');
-const siteForms = require('./libraries/Server-Legos/siteForms');
+
+
+const db = require("./firebase")
 
 // Init express application
 const app = express();
@@ -32,18 +33,6 @@ app.use(express.static(__dirname + "/static/"));
 app.use(bodyParser.json({ limit: "50mb"}));
 app.use(bodyParser.urlencoded({ extended: true, limit: "50mb"}));
 
-// Server site text
-app.use("/site-text", siteText);
-// Server site images
-app.use("/site-images", siteImages);
-// Server site models
-app.use("/site-models", siteModels);
-// Server site rules
-app.use("/site-rules", siteRules);
-// Server site mail
-app.use("/site-mail", siteMail);
-// Server site forms
-app.use("/site-forms", siteForms);
 
 // Allow post to /images, placing an image in the static folder
 app.post("/images/*", (req, res) => {
@@ -68,6 +57,25 @@ app.post("/delete-img", (req, res) => {
         } else {
             res.sendStatus(200);
         }
+    })
+})
+
+app.get("/external-forms", (req, res) => {
+    const siteId = req.query.siteId;
+    let secret = null;
+    let url = null;
+    switch (siteId) {
+        case "BTB":
+            secret = process.env.BTBFORMKEY;
+            url = "https://www.beyondthebelleducation.com"
+            break;
+        default:
+            break;
+    }
+    fetch(`${url}/site-forms?key=${secret}`).then(externalRes => {
+        externalRes.json().then(json => {
+            res.json(json);
+        })
     })
 })
 
