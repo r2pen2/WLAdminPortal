@@ -9,7 +9,7 @@ const siteRules = require('./libraries/Server-Legos/siteRules');
 const fileUpload = require('express-fileupload');
 
 
-const db = require("./firebase")
+const {db, auth} = require("./firebase")
 
 // Init express application
 const app = express();
@@ -62,20 +62,28 @@ app.post("/delete-img", (req, res) => {
 
 app.get("/external-forms", (req, res) => {
     const siteId = req.query.siteId;
-    let secret = null;
-    let url = null;
-    switch (siteId) {
-        case "BTB":
-            secret = process.env.BTBFORMKEY;
-            url = "https://www.beyondthebelleducation.com"
-            break;
-        default:
-            break;
-    }
-    fetch(`${url}/site-forms?key=${secret}`).then(externalRes => {
-        externalRes.json().then(json => {
-            res.json(json);
+    const accessToken = req.query.accessToken;
+
+
+    auth.verifyIdToken(accessToken).then(decodedToken => {
+        // We made it through!
+        let secret = null;
+        let url = null;
+        switch (siteId) {
+            case "BTB":
+                secret = process.env.BTBFORMKEY;
+                url = "https://www.beyondthebelleducation.com"
+                break;
+            default:
+                break;
+        }
+        fetch(`${url}/site-forms?key=${secret}`).then(externalRes => {
+            externalRes.json().then(json => {
+                res.json(json);
+            })
         })
+    }).catch(err => {
+        res.send(403)
     })
 })
 

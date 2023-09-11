@@ -1,5 +1,5 @@
 import React from 'react'
-import { CurrentSiteContext } from '../App';
+import { CurrentSiteContext, CurrentUserContext } from '../App';
 import { FormResponse } from '../libraries/Web-Legos/api/admin.ts';
 import { WLNavContent } from '../libraries/Web-Legos/components/Navigation';
 import { VerticalDivider, WLSpinnerPage } from '../libraries/Web-Legos/components/Layout';
@@ -9,21 +9,24 @@ import { getTimeOfDay } from '../libraries/Web-Legos/api/strings';
 
 export default function SiteForms() {
   
+  const {currentUser} = React.useContext(CurrentUserContext);
   const {currentSite} = React.useContext(CurrentSiteContext);
 
   const [formResponsesFetched, setFormResponsesFetched] = React.useState(false);
   const [formResponses, setFormResponses] = React.useState([]);
 
   React.useEffect(() => {
-    fetch(`http://localhost:25565/external-forms?siteId=${currentSite.siteKey}`).then((response) => {
-      response.json().then(json => {
-        let newResponses = [];
-        for (const key of Object.keys(json)) {
-          const res = json[key];
-          res.id = key;
-          newResponses.push(res);
-        }
-        setFormResponses(newResponses);
+    currentUser.getIdToken(true).then(idToken => {
+      fetch(`http://localhost:25565/external-forms?siteId=${currentSite.siteKey}&accessToken=${idToken}`).then((response) => {
+        response.json().then(json => {
+          let newResponses = [];
+          for (const key of Object.keys(json)) {
+            const res = json[key];
+            res.id = key;
+            newResponses.push(res);
+          }
+          setFormResponses(newResponses);
+        })
       })
     })
   }, [])
