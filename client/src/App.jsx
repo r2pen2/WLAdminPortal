@@ -76,6 +76,10 @@ function App() {
     })
   }, [])
 
+  useEffect(() => {
+    setCurrentTab("HOME");
+  }, [currentSite])
+
   if (!currentUser) {
     return <div className="App d-flex flex-column align-items-center justify-content-center" style={{height: "100vh"}}>
       <div className="app-content gap-2 d-flex flex-column align-items-center justify-content-center">
