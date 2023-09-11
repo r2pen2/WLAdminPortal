@@ -103,11 +103,6 @@ export default function Navbar() {
           <Text b color={getStatusColor()}>{getStatusBrief()}</Text>
         </div>
       </WLNavContent>
-      <div className="d-none d-md-flex">
-        <WLNavContent.Right>
-          <TabNavbar />
-        </WLNavContent.Right>
-      </div>
       <NextUINavbar.Collapse>
         {userSites.map((site, index) => (
           <NextUINavbar.CollapseItem key={index}>

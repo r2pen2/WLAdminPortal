@@ -16,6 +16,7 @@ import SiteUsers from './tabs/SiteUsers';
 import TabNavbar from './components/TabNavbar';
 import { AuthenticationManager, WLPermissionsConfig } from './libraries/Web-Legos/api/auth.ts';
 import { WLHeader } from './libraries/Web-Legos/components/Text';
+import SiteLog from './tabs/SiteLog';
 
 export const CurrentSiteContext = createContext();
 export const UserSitesContext = createContext();
@@ -42,6 +43,8 @@ function App() {
         return <SiteForms />;
       case SiteModule.users:
         return <SiteUsers />;
+      case SiteModule.log:
+        return <SiteLog />;
       default:
         return <SiteHome />;
     }
@@ -100,14 +103,6 @@ function App() {
     <CurrentTabContext.Provider value={{currentTab, setCurrentTab}} >
     <div className="App d-flex flex-column align-items-center w-100">
       <Navbar />
-      <div className="d-flex d-md-none w-100">
-        <NextUINavbar
-          variant="sticky"
-          maxWidth="xl"
-        >
-          <TabNavbar />
-        </NextUINavbar>
-      </div>
       <div className="app-content">
         { renderTab() }
       </div>
@@ -115,6 +110,7 @@ function App() {
         Sign Out
       </Button>
     </div>
+    <TabNavbar />
     </CurrentTabContext.Provider>
     </UserSitesContext.Provider>
     </CurrentSiteContext.Provider>

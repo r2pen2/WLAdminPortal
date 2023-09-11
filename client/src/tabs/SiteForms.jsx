@@ -26,6 +26,7 @@ export default function SiteForms() {
             newResponses.push(res);
           }
           setFormResponses(newResponses);
+          setFormResponsesFetched(true);
         })
       })
     })
@@ -139,7 +140,7 @@ export default function SiteForms() {
   }
 
   return (
-    <WLSpinnerPage dependencies={[]}>
+    <WLSpinnerPage dependencies={[formResponsesFetched]}>
       {renderResponses()}
     </WLSpinnerPage>
   )

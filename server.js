@@ -88,6 +88,37 @@ app.get("/external-forms", (req, res) => {
         res.send(403)
     })
 })
+app.get("/external-users", (req, res) => {
+    const siteId = req.query.siteId;
+    const accessToken = req.query.accessToken;
+
+    auth.verifyIdToken(accessToken).then(decodedToken => {
+        // We made it through!
+        let secret = null;
+        let url = null;
+        switch (siteId) {
+            case "BTB":
+                secret = process.env.BTBUSERKEY;
+                url = "https://www.beyondthebelleducation.com"
+                break;
+            case "YCD":
+                secret = process.env.YCDUSERKEY;
+                url = "https://www.youcandoitgardening.com"
+                break;
+            default:
+                break;
+        }
+        const userEmail = decodedToken.email;
+        // TODO: Before this fetch, scrape AvailableSites to make sure this user has access to the requested user deck
+        fetch(`${url}/site-users?key=${secret}`).then(externalRes => {
+            externalRes.json().then(json => {
+                res.json(json);
+            })
+        })
+    }).catch(err => {
+        res.send(403)
+    })
+})
 
 // Serve React build
 app.use(express.static(__dirname + "/client/build"));

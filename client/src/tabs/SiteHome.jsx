@@ -6,6 +6,7 @@ import { WLHeader, WLText } from "../libraries/Web-Legos/components/Text";
 import InsightsIcon from '@mui/icons-material/Insights';
 import PeopleIcon from '@mui/icons-material/People';
 import AssignmentIcon from '@mui/icons-material/Assignment';
+import EditIcon from '@mui/icons-material/Edit';
 import { VerticalDivider } from "../libraries/Web-Legos/components/Layout"
 
 export default function SiteHome() {
@@ -23,6 +24,8 @@ export default function SiteHome() {
           return <PeopleIcon style={{fontSize: 64, color: getModuleColor()}}/>;
         case SiteModule.forms:
           return <AssignmentIcon style={{fontSize: 64, color: getModuleColor()}}/>;
+        case SiteModule.log:
+          return <EditIcon style={{fontSize: 64, color: getModuleColor()}}/>;
         default:
           return;
       }
@@ -36,6 +39,8 @@ export default function SiteHome() {
           return "#00AE17";
         case SiteModule.forms:
           return "#1777F2";
+        case SiteModule.log:
+          return "#AB2FD6";
         default:
           return;
       }
@@ -49,6 +54,8 @@ export default function SiteHome() {
           return "Manage Users";
         case SiteModule.forms:
           return "Forms";
+        case SiteModule.log:
+          return "Changelog";
         default:
           return;
       }
@@ -62,6 +69,8 @@ export default function SiteHome() {
           return "Modify who has the ability to edit your website.";
         case SiteModule.forms:
           return "Access and review all data submitted through the forms on your website.";
+        case SiteModule.log:
+          return "See what changes have been made to your website.";
         default:
           return;
       }
