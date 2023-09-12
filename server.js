@@ -63,8 +63,6 @@ app.post("/delete-img", (req, res) => {
 app.get("/external-forms", (req, res) => {
     const siteId = req.query.siteId;
     const accessToken = req.query.accessToken;
-
-
     auth.verifyIdToken(accessToken).then(decodedToken => {
         // We made it through!
         let secret = null;
@@ -153,7 +151,6 @@ app.post("/external-users", (req, res) => {
             },
             body: JSON.stringify(postBody)
           }).then((response) => {
-            console.log(response)
             res.sendStatus(response.status)
           });
         }).catch((error) => {
