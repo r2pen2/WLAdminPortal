@@ -33,40 +33,19 @@ app.use(express.static(__dirname + "/static/"));
 app.use(bodyParser.json({ limit: "50mb"}));
 app.use(bodyParser.urlencoded({ extended: true, limit: "50mb"}));
 
-
-// Allow post to /images, placing an image in the static folder
-app.post("/images/*", (req, res) => {
-    const targetPath = __dirname + "static/" + req._parsedUrl.path;
-    fs.writeFile(targetPath, req.files.file.data, (err) => {
-        if (err) {
-            console.log(err);
-            res.sendStatus(500)
-        } else {
-            res.sendStatus(200)
-        }
-    });
-})
-
-app.post("/delete-img", (req, res) => {
-    const targetPath = __dirname + "/images/" + req._parsedUrl.query.substring(req._parsedUrl.query.indexOf("=") + 1)
-
-    fs.rm(targetPath, (err) => {
-        if (err) {
-            console.log(err);
-            res.sendStatus(500);
-        } else {
-            res.sendStatus(200);
-        }
-    })
-})
-
+/**
+ * Allow users to securely request forms. This cannot be done form the client becuase we must keep environment variables secret.
+ */
 app.get("/external-forms", (req, res) => {
+    // Harvest siteId and user accessToken from query
     const siteId = req.query.siteId;
     const accessToken = req.query.accessToken;
+    // Validate that this GET request is coming from an authenticated user
     auth.verifyIdToken(accessToken).then(decodedToken => {
         // We made it through!
         let secret = null;
         let url = null;
+        // Get the right URL and KEY from env
         switch (siteId) {
             case "BTB":
                 secret = process.env.BTBFORMKEY;
@@ -77,7 +56,9 @@ app.get("/external-forms", (req, res) => {
         }
         const userEmail = decodedToken.email;
         // TODO: Before this fetch, scrape AvailableSites to make sure this user has access to the requested form deck
+        // Contact the correct /site-forms endpoint
         fetch(`${url}/site-forms?key=${secret}`).then(externalRes => {
+            // Send all forms to the client
             externalRes.json().then(json => {
                 res.json(json);
             })
@@ -87,14 +68,19 @@ app.get("/external-forms", (req, res) => {
     })
 })
 
+/**
+ * Allow users to securely request user information. This cannot be done form the client becuase we must keep environment variables secret.
+ */
 app.get("/external-users", (req, res) => {
+    // Harvest siteId and user accessToken from query
     const siteId = req.query.siteId;
     const accessToken = req.query.accessToken;
-
+    // Validate that this GET request is coming from an authenticated user
     auth.verifyIdToken(accessToken).then(decodedToken => {
         // We made it through!
         let secret = null;
         let url = null;
+        // Get the right URL and KEY from env
         switch (siteId) {
             case "BTB":
                 secret = process.env.BTBUSERKEY;
@@ -109,21 +95,34 @@ app.get("/external-users", (req, res) => {
         }
         const userEmail = decodedToken.email;
         // TODO: Before this fetch, scrape AvailableSites to make sure this user has access to the requested user deck
+        // Send the post body to the correct /site-auth endpoint
         fetch(`${url}/site-auth?key=${secret}`).then(externalRes => {
+            // Send JSON response w/ site's users to the client
             externalRes.json().then(json => {
                 res.json(json);
             })
+        }).catch(error => {
+            // Something went wrong in our fetch— send a 404
+            console.log(error)
+            res.sendStatus(404)
         })
-    }).catch(err => {
-        res.send(403)
+    }).catch(error => {
+        // We were not authenticated!
+        console.log(error)
+        res.sendStatus(403)
     })
 })
 
+/**
+ * Allow for secure changing of user permissions on WL sites. This cannot be done form the client becuase we must keep environment variables secret.
+ */
 app.post("/external-users", (req, res) => {
+    // First, we verify that theis POST request is coming from an authenticated user
     auth.verifyIdToken(req.body.accessToken).then(decodedToken => {
         // We made it through!
         let secret = null;
         let url = null;
+        // Get the right URL and KEY from env
         switch (req.body.siteId) {
             case "BTB":
                 secret = process.env.BTBUSERKEY;
@@ -138,6 +137,7 @@ app.post("/external-users", (req, res) => {
         }
         const userEmail = decodedToken.email;
         // TODO: Before this fetch, scrape AvailableSites to make sure this user has access to the requested user deck
+        // Build the post body and send it to the correct /site-auth endpoint
         const postBody = {
             key: secret,
             email: req.body.email,
@@ -151,12 +151,18 @@ app.post("/external-users", (req, res) => {
             },
             body: JSON.stringify(postBody)
           }).then((response) => {
+            // Response from WL server received— forward status to the client
             res.sendStatus(response.status)
-          });
-        }).catch((error) => {
+          }).catch((error) => {
+            // Something went wrong in our fetch— send a 404
             console.log(error)
             res.sendStatus(404)
-        })
+          });
+        }).catch((error) => {
+            // We were not authenticated!
+            console.log(error)
+            res.sendStatus(403)
+          })
 })
 
 // Serve React build
