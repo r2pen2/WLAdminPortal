@@ -57,12 +57,17 @@ app.get("/external-forms", (req, res) => {
         const userEmail = decodedToken.email;
         // TODO: Before this fetch, scrape AvailableSites to make sure this user has access to the requested form deck
         // Contact the correct /site-forms endpoint
-        fetch(`${url}/site-forms?key=${secret}`).then(externalRes => {
-            // Send all forms to the client
-            externalRes.json().then(json => {
-                res.json(json);
+        if (!url) {
+            // URL is not valid— send 404
+            res.sendStatus(404)
+        } else {
+            fetch(`${url}/site-forms?key=${secret}`).then(externalRes => {
+                // Send all forms to the client
+                externalRes.json().then(json => {
+                    res.json(json);
+                })
             })
-        })
+        }
     }).catch(err => {
         res.send(403)
     })
@@ -96,16 +101,21 @@ app.get("/external-users", (req, res) => {
         const userEmail = decodedToken.email;
         // TODO: Before this fetch, scrape AvailableSites to make sure this user has access to the requested user deck
         // Send the post body to the correct /site-auth endpoint
-        fetch(`${url}/site-auth?key=${secret}`).then(externalRes => {
-            // Send JSON response w/ site's users to the client
-            externalRes.json().then(json => {
-                res.json(json);
-            })
-        }).catch(error => {
-            // Something went wrong in our fetch— send a 404
-            console.log(error)
+        if (!url) {
+            // URL is not valid— send 404
             res.sendStatus(404)
-        })
+        } else {
+            fetch(`${url}/site-auth?key=${secret}`).then(externalRes => {
+                // Send JSON response w/ site's users to the client
+                externalRes.json().then(json => {
+                    res.json(json);
+                })
+            }).catch(error => {
+                // Something went wrong in our fetch— send a 404
+                console.log(error)
+                res.sendStatus(404)
+            })
+        }
     }).catch(error => {
         // We were not authenticated!
         console.log(error)

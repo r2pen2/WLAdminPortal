@@ -9,6 +9,7 @@ import { FormResponse } from '../libraries/Web-Legos/api/admin.ts';
 
 // Component Imports
 import { WLSpinnerPage } from '../libraries/Web-Legos/components/Layout';
+import { WLDateTime, getSlashDateString, getTimeOfDay } from '../libraries/Web-Legos/api/strings';
 
 // Constants
 /** Minimum width for DataGrid columns */
@@ -93,7 +94,11 @@ export default function SiteForms() {
         let rows = [];
         for (const i in sortedResponses[formId]) {
           // Get row content by iterating through responses with this formId and pulling out content.
-          const content = {id: i, Timestamp: sortedResponses[formId][i].createdAt, ...sortedResponses[formId][i].content};
+          
+          const d = new WLDateTime()
+          d.loadTime(sortedResponses[formId][i].createdAtSeconds);
+          
+          const content = {id: i, Timestamp: d, ...sortedResponses[formId][i].content};
           rows.push(content);
         }
         return rows;
@@ -150,27 +155,31 @@ export default function SiteForms() {
       }
 
       /** A modal displaying the currently focused row */
-      const FocusedRowModal = (
-        <Modal
-          open={focusedRow}
-          onClose={() => setFocusedRow(null)}
-          className="p-3 d-flex flex-column align-items-center justify-content-center"
-        >
-          {renderFocusedRow()}
-          <Button flat color="error" onClick={() => setFocusedRow(null)}>
-            Close
-          </Button>
-        </Modal>
-      )
+      function FocusedRowModal() {
+        return (
+          <Modal
+            open={focusedRow}
+            onClose={() => setFocusedRow(null)}
+            className="p-3 d-flex flex-column align-items-center justify-content-center"
+          >
+            {renderFocusedRow()}
+            <Button flat color="error" onClick={() => setFocusedRow(null)}>
+              Close
+            </Button>
+          </Modal>
+        )
+      }
 
       /** A header for the form we're displaying */
-      const FormTitleContainer = (
-        <div className="w-100 d-flex flex-row">
-          <Text b align="left">
-            {sortedResponses[formId][0].formTitle}
-          </Text>
-        </div>
-      )
+      function FormTitleContainer() {
+        return (
+          <div className="w-100 d-flex flex-row">
+            <Text b align="left">
+              {sortedResponses[formId][0].formTitle}
+            </Text>
+          </div>
+        )
+      }
 
       // Render the DataGrid and Modal
       return (
