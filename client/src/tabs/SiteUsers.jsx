@@ -1,53 +1,68 @@
+// Library Imports
 import React from 'react'
-import { CurrentSiteContext, CurrentUserContext } from '../App';
-import { FormResponse } from '../libraries/Web-Legos/api/admin.ts';
-import { WLNavContent } from '../libraries/Web-Legos/components/Navigation';
-import { VerticalDivider, WLSpinnerPage } from '../libraries/Web-Legos/components/Layout';
-import {Text, Divider, Modal, Button, Spinner, Loading } from "@nextui-org/react"
+import { Loading } from "@nextui-org/react"
 import { DataGrid } from "@mui/x-data-grid"
+
+// Component Imports
+import { CurrentSiteContext, CurrentUserContext } from '../App';
+import { WLSpinnerPage } from '../libraries/Web-Legos/components/Layout';
 import { sortFieldsAlphabetically } from '../libraries/Web-Legos/api/sorting';
 import { Checkbox, Paper, Table, TableBody, TableCell, TableContainer, TableHead, TableRow } from '@mui/material';
 
 export default function SiteUsers() {
   
+  // Get contexts
   const {currentUser} = React.useContext(CurrentUserContext);
   const {currentSite} = React.useContext(CurrentSiteContext);
 
-  const [usersFetched, setUsersFetched] = React.useState(false);
-  const [users, setUsers] = React.useState(null);
+  // Set up states
+  const [usersFetched, setUsersFetched] = React.useState(false);  // Whether we've fetched site users
+  const [users, setUsers] = React.useState(null);                 // List of site users
 
-  const minColumnWidth = 200;
-
-function getUsers () {
-  currentUser.getIdToken(true).then(idToken => {
-    fetch(`http://localhost:25565/external-users?siteId=${currentSite.siteKey}&accessToken=${idToken}`).then((response) => {
-    response.json().then(json => {
-        let newUsers = [];
-        for (const key of Object.keys(json)) {
-          const res = json[key];
-          res.id = key;
-          newUsers.push(res);
-        }
-        setUsers(newUsers.sort((a, b) => a.displayName - b.displayName));
+  /**
+   * Fetch users from current site
+   */
+  function getUsers () {
+    // Get the current user's Firebase ID token
+    currentUser.getIdToken(true).then(idToken => {
+      /** HTTP endpoint for the GET request */
+      const endpoint = `http://localhost:25565/external-users?siteId=${currentSite.siteKey}&accessToken=${idToken}`; 
+      fetch(endpoint).then((response) => {
+        response.json().then(json => {
+          // Response received
+          /** A new users state */
+          let newUsers = [];
+          // Iterate through document ids for users from external server
+          for (const key of Object.keys(json)) {
+            // Get a user from the json w/ this specific key
+            const res = json[key];
+            // Attach key as an id so we can make changes to this object if needed
+            res.id = key;
+            newUsers.push(res);
+          }
+          // Update users state
+          setUsers(newUsers.sort((a, b) => a.displayName - b.displayName));
+          // Note that we've fetched users
+          setUsersFetched(true);
+        })
       })
     })
-  })
-}
-  
-  React.useEffect(() => {
-    getUsers()
-  }, [])
-
-  if (!users) {
-    return;
   }
   
+  // Whenever the currentUser or currentSite change, pull users from target site
+  React.useEffect(getUsers, [currentSite, currentUser]);
+
+  /** A component for showing and updaing a specific user permission */
   function PermissionCheckbox({perm, user}) {
 
-    const [updating, setUpdating] = React.useState();
+    // States
+    const [updating, setUpdating] = React.useState(); // Whether we're waiting on a response
 
+    /** Update the target site's users when a cell is clicked */
     function handleCellClick() {
+      // Get the current user's Firebase ID Token
       currentUser.getIdToken(true).then(idToken => {
+        /** Body for the POST request */
         const postBody = {
           siteId: currentSite.siteKey,
           accessToken: idToken,
@@ -55,7 +70,9 @@ function getUsers () {
           field: perm,
           value: !user.permissions[perm],
         }
+        // Note that we're sending a request
         setUpdating(true);
+        // Send fetch request to server
         fetch(`http://localhost:25565/external-users`, {
           method: "POST",
           headers: {
@@ -63,6 +80,7 @@ function getUsers () {
           },
           body: JSON.stringify(postBody)
         }).then((response) => {
+          // All was well! Fetch users again.
           if (response.status === 200) {
             setUsersFetched(false);
             getUsers();
@@ -71,26 +89,37 @@ function getUsers () {
       })
     }
 
+    // Show loading if we're updating, otherwise show a checkbox
     return updating ? <Loading size='sm' /> : <Checkbox checked={user.permissions[perm]} onClick={handleCellClick}/>
   }
 
+  /** Table header rendered from first user's permissions list */
+  function TableHeader() {
+    return (
+      <TableHead>
+        <TableRow>
+          <TableCell align="center" colSpan={2}>User Details</TableCell>
+          <TableCell align="center" colSpan={Object.keys(users[0].permissions).length}>Permissions</TableCell>
+        </TableRow>
+        <TableRow>
+          <TableCell>Display Name</TableCell>
+          <TableCell>Email</TableCell>
+          <TableCell>op</TableCell>
+          {Object.keys(sortFieldsAlphabetically(users[0].permissions)).map((k,i) => (k !== "op" && <TableCell key={i}>{k}</TableCell>))}
+        </TableRow>
+      </TableHead>
+    )
+  }
+
+  // Just return if there are no users
+  if (!users) { return ; }
+  
   return (
     <WLSpinnerPage dependencies={[usersFetched]}>
       <div className="px-3 w-100 d-flex flex-column align-items-center justify-content-start">
         <TableContainer component={Paper}>
           <Table aria-label="users-table">
-            <TableHead>
-              <TableRow>
-                <TableCell align="center" colSpan={2}>User Details</TableCell>
-                <TableCell align="center" colSpan={Object.keys(users[0].permissions).length}>Permissions</TableCell>
-              </TableRow>
-              <TableRow>
-                <TableCell>Display Name</TableCell>
-                <TableCell>Email</TableCell>
-                <TableCell>op</TableCell>
-                {Object.keys(sortFieldsAlphabetically(users[0].permissions)).map((k,i) => (k !== "op" && <TableCell key={i}>{k}</TableCell>))}
-              </TableRow>
-            </TableHead>
+            <TableHeader />
             <TableBody>
               {
                 users.map((user, i) => (
