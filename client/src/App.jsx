@@ -36,7 +36,7 @@ export const CurrentTabContext = createContext();
 /** Context to keep track of the current tab */
 export const CurrentUserContext = createContext();
 
-function App() {
+export function App() {
 
   // Create states to place in Contexts
   const [userSites, setUserSites] = useState([]);           // Sites that the current user can access
@@ -134,58 +134,70 @@ function App() {
     )
   }
 
-  // If there's no current user signed in, display a centered "Sign In" button
-  if (!currentUser) {
-    return (
-      <WLSpinnerPage dependencies={[currentUserFetched]}>
-        <div className="App d-flex flex-column align-items-center justify-content-center" style={{height: "100vh"}}>
-          <div className="app-content gap-2 d-flex flex-column align-items-center justify-content-center">
-            <WLHeader>
-              joed.dev Admin Portal
-            </WLHeader>
-            <div className="d-flex flex-row gap-2 py-2">
-              <Tooltip placement="top" content="See Analytics">
-                <InsightsIcon style={{fontSize: 48, color: "#D41D6D"}}/>
-              </Tooltip>
-              <Tooltip placement="top" content="Manage Users">
-                <PeopleIcon style={{fontSize: 48, color: "#00AE17"}}/>
-              </Tooltip>
-              <Tooltip placement="top" content="View Forms">
-                <AssignmentIcon style={{fontSize: 48, color: "#1777F2"}}/>
-              </Tooltip>
-              <Tooltip placement="top" content="Monitor Changes">
-                <EditIcon style={{fontSize: 48, color: "#AB2FD6"}}/>
-              </Tooltip>
-            </div>
-            <Button flat onClick={handleSignIn}>
-              Sign In
-            </Button>
-          </div>
-        </div>
-      </WLSpinnerPage>
-    )
-  }
+  function AppContent() {
 
-  if (!currentSite) {
-    // If there's no current site, the user isn't authorized on any sites.
-    return (
-      <WLSpinnerPage dependencies={[sitesFetched]}>
-        <div className="App d-flex flex-column align-items-center justify-content-center" style={{height: "100vh"}}>
-          <div className="app-content gap-2 d-flex flex-column align-items-center justify-content-center">
-            <SentimentDissatisfiedIcon sx={{fontSize: 128}}/>
-            <WLHeader>
-              Oh no!
-            </WLHeader>
-            <Text>
-              The email address "{currentUser.email}" doesn't have access to any sites.
-            </Text>
-            <Text>
-            If you believe this to be an error, contact a site administrator or Joe Dobbelaar: <a href="mailto:joe@joed.dev">joe@joed.dev</a>
-            </Text>
-            <SignOutButton />
+    // If there's no current user signed in, display a centered "Sign In" button
+    if (!currentUser) {
+      return (
+        <WLSpinnerPage dependencies={[currentUserFetched]}>
+          <div className="App d-flex flex-column align-items-center justify-content-center" style={{height: "100vh"}}>
+            <div className="app-content gap-2 d-flex flex-column align-items-center justify-content-center">
+              <WLHeader>
+                joed.dev Admin Portal
+              </WLHeader>
+              <div className="d-flex flex-row gap-2 py-2">
+                <Tooltip placement="top" content="See Analytics">
+                  <InsightsIcon style={{fontSize: 48, color: "#D41D6D"}}/>
+                </Tooltip>
+                <Tooltip placement="top" content="Manage Users">
+                  <PeopleIcon style={{fontSize: 48, color: "#00AE17"}}/>
+                </Tooltip>
+                <Tooltip placement="top" content="View Forms">
+                  <AssignmentIcon style={{fontSize: 48, color: "#1777F2"}}/>
+                </Tooltip>
+                <Tooltip placement="top" content="Monitor Changes">
+                  <EditIcon style={{fontSize: 48, color: "#AB2FD6"}}/>
+                </Tooltip>
+              </div>
+              <Button flat onClick={handleSignIn}>
+                Sign In
+              </Button>
+            </div>
           </div>
-        </div>
-      </WLSpinnerPage>
+        </WLSpinnerPage>
+      )
+    }
+    
+    if (!currentSite) {
+      // If there's no current site, the user isn't authorized on any sites.
+      return (
+        <WLSpinnerPage dependencies={[sitesFetched]}>
+          <div className="App d-flex flex-column align-items-center justify-content-center" style={{height: "100vh"}}>
+            <div className="app-content gap-2 d-flex flex-column align-items-center justify-content-center">
+              <SentimentDissatisfiedIcon sx={{fontSize: 128}}/>
+              <WLHeader>
+                Oh no!
+              </WLHeader>
+              <Text>
+                The email address "{currentUser.email}" doesn't have access to any sites.
+              </Text>
+              <Text>
+              If you believe this to be an error, contact a site administrator or Joe Dobbelaar: <a href="mailto:joe@joed.dev">joe@joed.dev</a>
+              </Text>
+              <SignOutButton />
+            </div>
+          </div>
+        </WLSpinnerPage>
+      )
+    }
+    
+    return (
+      <Navbar />,
+      <div className="app-content">
+        { renderTab() }
+      </div>,
+      <SignOutButton />,
+      <TabNavbar />
     )
   }
 
@@ -196,13 +208,8 @@ function App() {
     <UserSitesContext.Provider value={{userSites, setUserSites}} >
     <CurrentTabContext.Provider value={{currentTab, setCurrentTab}} >
       <WLSpinnerPage dependencies={[sitesFetched]}>
-        <div className="App d-flex flex-column align-items-center w-100">
-          <Navbar />
-          <div className="app-content">
-            { renderTab() }
-          </div>
-          <SignOutButton />
-          <TabNavbar />
+        <div className="App d-flex flex-column align-items-center w-100" data-testId="app">
+          <AppContent />
         </div>
       </WLSpinnerPage>
     </CurrentTabContext.Provider>
