@@ -1,6 +1,10 @@
 // Library Imports
-import { Button } from '@nextui-org/react';
+import { Button, Text, Tooltip } from '@nextui-org/react';
 import { createContext, useState, useEffect } from 'react';
+import InsightsIcon from '@mui/icons-material/Insights';
+import PeopleIcon from '@mui/icons-material/People';
+import AssignmentIcon from '@mui/icons-material/Assignment';
+import EditIcon from '@mui/icons-material/Edit';
 
 // Style Imports
 import './App.css';
@@ -13,6 +17,7 @@ import { AuthenticationManager, WLPermissionsConfig } from './libraries/Web-Lego
 import Navbar from './components/Navbar';
 import TabNavbar from './components/TabNavbar';
 import { WLHeader } from './libraries/Web-Legos/components/Text';
+import SentimentDissatisfiedIcon from '@mui/icons-material/SentimentDissatisfied';
 
 // Routes / Tabs
 import SiteHome from './tabs/SiteHome';
@@ -20,6 +25,7 @@ import SiteAnalytics from './tabs/SiteAnalytics';
 import SiteLog from './tabs/SiteLog';
 import SiteForms from './tabs/SiteForms';
 import SiteUsers from './tabs/SiteUsers';
+import { WLSpinnerPage } from './libraries/Web-Legos/components/Layout';
 
 /** Context to keep track of the current site */
 export const CurrentSiteContext = createContext();
@@ -30,18 +36,40 @@ export const CurrentTabContext = createContext();
 /** Context to keep track of the current tab */
 export const CurrentUserContext = createContext();
 
-/** For development— BTB site data */
-const BTB = AvailableSite.examples.default;
-/** For development— YCD site data */
-const YCD = AvailableSite.examples.alternate;
+export const HOSTNAME = ''
 
 function App() {
 
   // Create states to place in Contexts
-  const [userSites, setUserSites] = useState([BTB, YCD]); // Sites that the current user can access
-  const [currentSite, setCurrentSite] = useState(BTB)     // The current site
-  const [currentUser, setCurrentUser] = useState(null);   // The current user
-  const [currentTab, setCurrentTab] = useState("HOME");   // The current tab
+  const [userSites, setUserSites] = useState([]);           // Sites that the current user can access
+  const [currentSite, setCurrentSite] = useState(null)      // The current site
+  const [currentUser, setCurrentUser] = useState(null);     // The current user
+  const [currentUserFetched, setCurrentUserFetched] = useState(false);     // The current user
+  const [currentTab, setCurrentTab] = useState("HOME");     // The current tab
+  const [sitesFetched, setSitesFetched] = useState(false);  // Whether sites have been fetched yet
+
+  function getUserSites() {
+
+    if (!currentUser) { return; }
+    console.log("Fetching sites...")
+    setSitesFetched(false);
+    AvailableSite.get(setSitesFetched).then((sites) => {
+      let filteredUserSites = [];
+      for (const site of sites) {
+        if (site.users.includes(currentUser.email)) {
+          site.siteKey = site.id;
+          filteredUserSites.push(site);
+        }
+      }
+      setUserSites(filteredUserSites);
+      setCurrentSite(filteredUserSites[0])
+    });
+  }
+
+  // Fetch user sites on login
+  useEffect(getUserSites, [currentUser])
+
+  console.log(userSites)
 
   /**
    * Pick the right tab to render given {@link CurrentTabContext}
@@ -95,18 +123,73 @@ function App() {
   // If ever the currentSite changes, bring us HOME
   useEffect(() => { setCurrentTab("HOME"); }, [currentSite]);
 
+  useEffect(() => {
+    authenticationManager.auth.authStateReady().then(() => {
+      setCurrentUserFetched(true);
+    })
+  }, [])
+
+  function SignOutButton() {
+    return (
+      <Button flat onClick={() => authenticationManager.auth.signOut()}>
+        Sign Out
+      </Button>
+    )
+  }
+
   // If there's no current user signed in, display a centered "Sign In" button
   if (!currentUser) {
-    return <div className="App d-flex flex-column align-items-center justify-content-center" style={{height: "100vh"}}>
-      <div className="app-content gap-2 d-flex flex-column align-items-center justify-content-center">
-        <WLHeader>
-          joed.dev Admin Portal
-        </WLHeader>
-        <Button flat onClick={handleSignIn}>
-          Sign In
-        </Button>
-      </div>
-    </div>
+    return (
+      <WLSpinnerPage dependencies={[currentUserFetched]}>
+        <div className="App d-flex flex-column align-items-center justify-content-center" style={{height: "100vh"}}>
+          <div className="app-content gap-2 d-flex flex-column align-items-center justify-content-center">
+            <WLHeader>
+              joed.dev Admin Portal
+            </WLHeader>
+            <div className="d-flex flex-row gap-2 py-2">
+              <Tooltip placement="top" content="See Analytics">
+                <InsightsIcon style={{fontSize: 48, color: "#D41D6D"}}/>
+              </Tooltip>
+              <Tooltip placement="top" content="Manage Users">
+                <PeopleIcon style={{fontSize: 48, color: "#00AE17"}}/>
+              </Tooltip>
+              <Tooltip placement="top" content="View Forms">
+                <AssignmentIcon style={{fontSize: 48, color: "#1777F2"}}/>
+              </Tooltip>
+              <Tooltip placement="top" content="Monitor Changes">
+                <EditIcon style={{fontSize: 48, color: "#AB2FD6"}}/>
+              </Tooltip>
+            </div>
+            <Button flat onClick={handleSignIn}>
+              Sign In
+            </Button>
+          </div>
+        </div>
+      </WLSpinnerPage>
+    )
+  }
+
+  if (!currentSite) {
+    // If there's no current site, the user isn't authorized on any sites.
+    return (
+      <WLSpinnerPage dependencies={[sitesFetched]}>
+        <div className="App d-flex flex-column align-items-center justify-content-center" style={{height: "100vh"}}>
+          <div className="app-content gap-2 d-flex flex-column align-items-center justify-content-center">
+            <SentimentDissatisfiedIcon sx={{fontSize: 128}}/>
+            <WLHeader>
+              Oh no!
+            </WLHeader>
+            <Text>
+              The email address "{currentUser.email}" doesn't have access to any sites.
+            </Text>
+            <Text>
+            If you believe this to be an error, contact a site administrator or Joe Dobbelaar: <a href="mailto:joe@joed.dev">joe@joed.dev</a>
+            </Text>
+            <SignOutButton />
+          </div>
+        </div>
+      </WLSpinnerPage>
+    )
   }
 
   // Admin portal let's goooooooo
@@ -115,16 +198,16 @@ function App() {
     <CurrentSiteContext.Provider value={{currentSite, setCurrentSite}} >
     <UserSitesContext.Provider value={{userSites, setUserSites}} >
     <CurrentTabContext.Provider value={{currentTab, setCurrentTab}} >
-      <div className="App d-flex flex-column align-items-center w-100">
-        <Navbar />
-        <div className="app-content">
-          { renderTab() }
+      <WLSpinnerPage dependencies={[sitesFetched]}>
+        <div className="App d-flex flex-column align-items-center w-100">
+          <Navbar />
+          <div className="app-content">
+            { renderTab() }
+          </div>
+          <SignOutButton />
         </div>
-        <Button flat onClick={() => authenticationManager.auth.signOut()}>
-          Sign Out
-        </Button>
-      </div>
-      <TabNavbar />
+        <TabNavbar />
+      </WLSpinnerPage>
     </CurrentTabContext.Provider>
     </UserSitesContext.Provider>
     </CurrentSiteContext.Provider>

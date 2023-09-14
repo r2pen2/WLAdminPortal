@@ -1,13 +1,14 @@
 // Library imports
 import React from 'react'
-import { CurrentSiteContext, CurrentUserContext } from '../App';
 import { Text, Divider, Modal, Button } from "@nextui-org/react"
 import { DataGrid } from "@mui/x-data-grid"
 
+
 // Models
-import { FormResponse } from '../libraries/Web-Legos/api/admin.ts';
+import { FormResponse, SiteModule } from '../libraries/Web-Legos/api/admin.ts';
 
 // Component Imports
+import { CurrentSiteContext, CurrentUserContext, HOSTNAME } from '../App';
 import { WLSpinnerPage } from '../libraries/Web-Legos/components/Layout';
 import { WLDateTime, getSlashDateString, getTimeOfDay } from '../libraries/Web-Legos/api/strings';
 
@@ -36,7 +37,8 @@ export default function SiteForms() {
     // Get the current user's Firebase ID token
     currentUser.getIdToken(true).then(idToken => {
       /** HTTP endpoint for the GET request */
-      const endpoint = `http://localhost:25565/external-forms?siteId=${currentSite.siteKey}&accessToken=${idToken}`;
+      const endpoint = `${HOSTNAME}/external-forms?siteId=${currentSite.siteKey}&accessToken=${idToken}`;
+      console.log(endpoint);
       // Fetch forms with Firestore ID token as authentication
       fetch(endpoint).then((response) => {
         response.json().then(json => {
@@ -148,7 +150,7 @@ export default function SiteForms() {
               {k}
             </Text>
             <Text>
-              {focusedRow[k]}
+              {focusedRow[k].toString()}
             </Text>
           </div>
         })

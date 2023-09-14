@@ -1,7 +1,7 @@
 import React from 'react'
 import { CurrentSiteContext, CurrentTabContext } from '../App'
 import { SiteModule, siteModules } from '../libraries/Web-Legos/api/admin.ts';
-import { Card, Text } from "@nextui-org/react"
+import { Card, Text, Tooltip } from "@nextui-org/react"
 import { WLHeader, WLText } from "../libraries/Web-Legos/components/Text";
 import InsightsIcon from '@mui/icons-material/Insights';
 import PeopleIcon from '@mui/icons-material/People';
@@ -49,13 +49,13 @@ export default function SiteHome() {
     function getModuleText() {
       switch(siteModule) {
         case SiteModule.analytics:
-          return "Analytics";
+          return "Coming Soon: Analytics";
         case SiteModule.users:
           return "Manage Users";
         case SiteModule.forms:
           return "Forms";
         case SiteModule.log:
-          return "Changelog";
+          return "Coming Soon: Changelog";
         default:
           return;
       }
@@ -76,13 +76,17 @@ export default function SiteHome() {
       }
     }
 
+
+    const WIP = (siteModule === SiteModule.analytics || siteModule === SiteModule.log);
+
     return (
       <div className="py-2 px-md-2 col-xl-4 col-lg-6 col-md-12" style={{height: 200}}>
         <Card 
-          className="d-flex flex-row align-items-center justify-content-start px-3 gap-2 h-100" 
-          isPressable 
-          isHoverable
+          className="d-flex flex-row align-items-center justify-content-start gap-2 p-3 h-100" 
+          isPressable={!WIP}
+          isHoverable={!WIP}
           onClick={() => setCurrentTab(siteModule)}  
+          style={{backgroundColor: WIP && "#e4e4e4"}}
         >
           {renderIcon()}
           <div className="px-0 px-lg-2" >

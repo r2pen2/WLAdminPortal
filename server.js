@@ -5,7 +5,7 @@ const bodyParser = require('body-parser');
 const dotenv = require('dotenv');
 const cors = require('cors');
 const fs = require('fs');
-const siteRules = require('./libraries/Server-Legos/siteRules');
+const siteModels = require('./adminSiteModels');
 const fileUpload = require('express-fileupload');
 
 
@@ -153,6 +153,7 @@ app.post("/external-users", (req, res) => {
             email: req.body.email,
             field: req.body.field,
             value: req.body.value,
+            isAdmin: req.body.isAdmin,
           }
         fetch(`${url}/site-auth`, {
             method: "POST",
@@ -174,6 +175,8 @@ app.post("/external-users", (req, res) => {
             res.sendStatus(403)
           })
 })
+
+app.use("/site-models", siteModels);
 
 // Serve React build
 app.use(express.static(__dirname + "/client/build"));
