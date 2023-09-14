@@ -11,6 +11,7 @@ import { FormResponse, SiteModule } from '../libraries/Web-Legos/api/admin.ts';
 import { CurrentSiteContext, CurrentUserContext, HOSTNAME } from '../App';
 import { WLSpinnerPage } from '../libraries/Web-Legos/components/Layout';
 import { WLDateTime, getSlashDateString, getTimeOfDay } from '../libraries/Web-Legos/api/strings';
+import NoPerms from '../components/noPerms.jsx';
 
 // Constants
 /** Minimum width for DataGrid columns */
@@ -29,6 +30,8 @@ export default function SiteForms() {
   const [formResponsesFetched, setFormResponsesFetched] = React.useState(false);  // Whether form responses have been fetched from the site
   const [formResponses, setFormResponses] = React.useState([]);                   // List of form responses from the site
   const [focusedRow, setFocusedRow] = React.useState(null);                       // The focused row (if any)
+  const [permissionFetched, setPermissionFetched] = React.useState(false) // Whether we know if this user has permission to view this page
+  const [permission, setPermission] = React.useState(false)       // Whether user can view this page
 
   /**
    * Fetch form responses from current site
@@ -60,10 +63,35 @@ export default function SiteForms() {
         })
       })
     })
+  }  
+
+  function getPermission() {
+    setPermissionFetched(false);
+    // Get the current user's Firebase ID token
+    currentUser.getIdToken(true).then(idToken => {
+      /** HTTP endpoint for the GET request */
+      const endpoint = `${HOSTNAME}/external-users?siteId=${currentSite.siteKey}&accessToken=${idToken}`; 
+      fetch(endpoint).then((response) => {
+        response.json().then(json => {
+          // Response received
+          // Iterate through document ids for users from external server
+          let permState = false;
+          for (const value of Object.values(json)) {
+            if (value.email === currentUser.email) {
+              permState = value.adminPermissions.forms
+            }
+          }
+          setPermission(permState)
+          setPermissionFetched(true)
+        })
+      })
+    })
   }
 
   // When currentUser or currentSite updates, fetch all of the current site's form responses
   React.useEffect(fetchForms, [currentUser, currentSite])
+  // Whenever the currentUser or currentSite change, make sure we have permission to view this page
+  React.useEffect(getPermission, [currentSite, currentUser]);
 
   /**
    * Render form responses as separate DataGrid components for each individual form. Populate those DataGrids with form responses and allow for
@@ -210,8 +238,8 @@ export default function SiteForms() {
 
   // Once form responses have been fetched, render them in a DataGrid.
   return (
-    <WLSpinnerPage dependencies={[formResponsesFetched]}>
-      {renderResponses()}
+    <WLSpinnerPage dependencies={[formResponsesFetched, permissionFetched]}>
+      {permission ? renderResponses() : <NoPerms />}
     </WLSpinnerPage>
   )
 }

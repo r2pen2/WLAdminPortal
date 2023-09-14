@@ -5,6 +5,7 @@ import InsightsIcon from '@mui/icons-material/Insights';
 import PeopleIcon from '@mui/icons-material/People';
 import AssignmentIcon from '@mui/icons-material/Assignment';
 import EditIcon from '@mui/icons-material/Edit';
+import SentimentDissatisfiedIcon from '@mui/icons-material/SentimentDissatisfied';
 
 // Style Imports
 import './App.css';
@@ -17,7 +18,6 @@ import { AuthenticationManager, WLPermissionsConfig } from './libraries/Web-Lego
 import Navbar from './components/Navbar';
 import TabNavbar from './components/TabNavbar';
 import { WLHeader } from './libraries/Web-Legos/components/Text';
-import SentimentDissatisfiedIcon from '@mui/icons-material/SentimentDissatisfied';
 
 // Routes / Tabs
 import SiteHome from './tabs/SiteHome';
@@ -205,8 +205,8 @@ function App() {
             { renderTab() }
           </div>
           <SignOutButton />
+          <TabNavbar />
         </div>
-        <TabNavbar />
       </WLSpinnerPage>
     </CurrentTabContext.Provider>
     </UserSitesContext.Provider>

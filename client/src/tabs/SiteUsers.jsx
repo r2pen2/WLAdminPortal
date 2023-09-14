@@ -3,6 +3,7 @@ import React from 'react'
 import { Loading } from "@nextui-org/react"
 
 // Component Imports
+import NoPerms from "../components/noPerms"
 import { CurrentSiteContext, CurrentUserContext, HOSTNAME } from '../App';
 import { WLSpinnerPage } from '../libraries/Web-Legos/components/Layout';
 import { sortFieldsAlphabetically } from '../libraries/Web-Legos/api/sorting';
@@ -17,6 +18,8 @@ export default function SiteUsers() {
   // Set up states
   const [usersFetched, setUsersFetched] = React.useState(false);  // Whether we've fetched site users
   const [users, setUsers] = React.useState([]);                   // List of site users
+  const [permissionFetched, setPermissionFetched] = React.useState(false) // Whether we know if this user has permission to view this page
+  const [permission, setPermission] = React.useState(false)       // Whether user can view this page
 
   /**
    * Fetch users from current site
@@ -47,9 +50,34 @@ export default function SiteUsers() {
       })
     })
   }
+
+  function getPermission() {
+    setPermissionFetched(false);
+    // Get the current user's Firebase ID token
+    currentUser.getIdToken(true).then(idToken => {
+      /** HTTP endpoint for the GET request */
+      const endpoint = `${HOSTNAME}/external-users?siteId=${currentSite.siteKey}&accessToken=${idToken}`; 
+      fetch(endpoint).then((response) => {
+        response.json().then(json => {
+          // Response received
+          // Iterate through document ids for users from external server
+          let permState = false;
+          for (const value of Object.values(json)) {
+            if (value.email === currentUser.email) {
+              permState = value.adminPermissions.users
+            }
+          }
+          setPermission(permState)
+          setPermissionFetched(true)
+        })
+      })
+    })
+  }
   
   // Whenever the currentUser or currentSite change, pull users from target site
   React.useEffect(getUsers, [currentSite, currentUser]);
+  // Whenever the currentUser or currentSite change, make sure we have permission to view this page
+  React.useEffect(getPermission, [currentSite, currentUser]);
 
   /** A component for showing and updaing a specific user permission */
   function PermissionCheckbox({perm, user, isAdmin}) {
@@ -124,31 +152,36 @@ export default function SiteUsers() {
   }
   
   return (
-    <WLSpinnerPage dependencies={[usersFetched]}>
-      <div className="px-3 w-100 d-flex flex-column align-items-center justify-content-start">
-        <TableContainer component={Paper}>
-          <Table aria-label="users-table">
-            <TableHeader />
-            <TableBody>
-              {
-                users.map((user, i) => (
-                  <TableRow key={i}>
-                    <TableCell>{`${user.displayName}${user.isOwner && " (Owner)"}`}</TableCell>
-                    <TableCell>{user.email}</TableCell>
-                    <TableCell><PermissionCheckbox perm="op" user={user} /></TableCell>
-                    {Object.keys(sortFieldsAlphabetically(user.permissions)).map((permissionKey, pi) => (
-                      (permissionKey !== "op") && <TableCell key={pi}><PermissionCheckbox perm={permissionKey} user={user} /></TableCell>
-                    ))}
-                    {Object.keys(sortFieldsAlphabetically(user.adminPermissions)).map((permissionKey, pi) => (
-                      <TableCell key={pi}><PermissionCheckbox isAdmin perm={permissionKey} user={user} /></TableCell>
-                    ))}
-                  </TableRow>
-                ))
-              }
-            </TableBody>
-          </Table>
-        </TableContainer>
-      </div>
+    <WLSpinnerPage dependencies={[usersFetched, permissionFetched]}>
+      {
+      permission ?
+        <div className="px-3 w-100 d-flex flex-column align-items-center justify-content-start">
+          <TableContainer component={Paper}>
+            <Table aria-label="users-table">
+              <TableHeader />
+              <TableBody>
+                {
+                  users.map((user, i) => (
+                    <TableRow key={i}>
+                      <TableCell>{`${user.displayName}${user.isOwner && " (Owner)"}`}</TableCell>
+                      <TableCell>{user.email}</TableCell>
+                      <TableCell><PermissionCheckbox perm="op" user={user} /></TableCell>
+                      {Object.keys(sortFieldsAlphabetically(user.permissions)).map((permissionKey, pi) => (
+                        (permissionKey !== "op") && <TableCell key={pi}><PermissionCheckbox perm={permissionKey} user={user} /></TableCell>
+                      ))}
+                      {Object.keys(sortFieldsAlphabetically(user.adminPermissions)).map((permissionKey, pi) => (
+                        <TableCell key={pi}><PermissionCheckbox isAdmin perm={permissionKey} user={user} /></TableCell>
+                      ))}
+                    </TableRow>
+                  ))
+                }
+              </TableBody>
+            </Table>
+          </TableContainer>
+        </div>
+      :
+        <NoPerms />
+      }
     </WLSpinnerPage>
   )
 }

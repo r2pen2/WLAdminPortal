@@ -1,12 +1,13 @@
 import React, { useContext, useEffect, useRef, useState } from 'react'
 import { Divider, Navbar as NextUINavbar, Text, Tooltip } from "@nextui-org/react"
-import { CurrentSiteContext, UserSitesContext } from '../App'
+import { CurrentSiteContext, CurrentTabContext, UserSitesContext } from '../App'
 import {WLNavBrandCenter, WLNavBrandLeft, WLNavContent} from "../libraries/Web-Legos/components/Navigation";
 import TabNavbar from './TabNavbar';
 
 export default function Navbar() {
 
   const { currentSite, setCurrentSite } = useContext(CurrentSiteContext)
+  const { currentTab, setCurrentTab } = useContext(CurrentTabContext)
   const { userSites } = useContext(UserSitesContext)
   
   const [status, setStatus] = useState(false);
@@ -90,7 +91,7 @@ export default function Navbar() {
           <NextUINavbar.Toggle 
             className="px-3"
             ref={navbarToggleRef}
-            onChange={(s) => setIsSideMenuOpen(s)}
+            onChange={(s) => {setIsSideMenuOpen(s); setCurrentTab("HOME")}}
           />
           <div className="d-none d-md-flex flex-row align-items-center justify-content-center w-100" onClick={goToSite} style={{cursor: 'pointer'}}>         
             <WLNavBrandLeft title={currentSite.title} source={currentSite.logoSource} showIn="md" onClick={goToSite}/>
