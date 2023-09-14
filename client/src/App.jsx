@@ -36,8 +36,6 @@ export const CurrentTabContext = createContext();
 /** Context to keep track of the current tab */
 export const CurrentUserContext = createContext();
 
-export const HOSTNAME = ''
-
 function App() {
 
   // Create states to place in Contexts
@@ -51,7 +49,6 @@ function App() {
   function getUserSites() {
 
     if (!currentUser) { return; }
-    console.log("Fetching sites...")
     setSitesFetched(false);
     AvailableSite.get(setSitesFetched).then((sites) => {
       let filteredUserSites = [];

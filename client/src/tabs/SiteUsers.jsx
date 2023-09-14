@@ -4,7 +4,7 @@ import { Loading } from "@nextui-org/react"
 
 // Component Imports
 import NoPerms from "../components/noPerms"
-import { CurrentSiteContext, CurrentUserContext, HOSTNAME } from '../App';
+import { CurrentSiteContext, CurrentUserContext } from '../App';
 import { WLSpinnerPage } from '../libraries/Web-Legos/components/Layout';
 import { sortFieldsAlphabetically } from '../libraries/Web-Legos/api/sorting';
 import { Checkbox, Paper, Table, TableBody, TableCell, TableContainer, TableHead, TableRow } from '@mui/material';
@@ -28,7 +28,7 @@ export default function SiteUsers() {
     // Get the current user's Firebase ID token
     currentUser.getIdToken(true).then(idToken => {
       /** HTTP endpoint for the GET request */
-      const endpoint = `${HOSTNAME}/external-users?siteId=${currentSite.siteKey}&accessToken=${idToken}`; 
+      const endpoint = `/external-users?siteId=${currentSite.siteKey}&accessToken=${idToken}`; 
       fetch(endpoint).then((response) => {
         response.json().then(json => {
           // Response received
@@ -56,7 +56,7 @@ export default function SiteUsers() {
     // Get the current user's Firebase ID token
     currentUser.getIdToken(true).then(idToken => {
       /** HTTP endpoint for the GET request */
-      const endpoint = `${HOSTNAME}/external-users?siteId=${currentSite.siteKey}&accessToken=${idToken}`; 
+      const endpoint = `/external-users?siteId=${currentSite.siteKey}&accessToken=${idToken}`; 
       fetch(endpoint).then((response) => {
         response.json().then(json => {
           // Response received
@@ -103,7 +103,7 @@ export default function SiteUsers() {
         // Note that we're sending a request
         setUpdating(true);
         // Send fetch request to server
-        fetch(`${HOSTNAME}/external-users`, {
+        fetch(`/external-users`, {
           method: "POST",
           headers: {
             "Content-Type": "application/json"
