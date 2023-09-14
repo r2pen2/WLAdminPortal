@@ -142,24 +142,40 @@ export function App() {
         <WLSpinnerPage dependencies={[currentUserFetched]}>
           <div className="App d-flex flex-column align-items-center justify-content-center" style={{height: "100vh"}}>
             <div className="app-content gap-2 d-flex flex-column align-items-center justify-content-center">
-              <WLHeader>
+              <WLHeader data-testid="signed-out-header">
                 joed.dev Admin Portal
               </WLHeader>
               <div className="d-flex flex-row gap-2 py-2">
-                <Tooltip placement="top" content="See Analytics">
-                  <InsightsIcon style={{fontSize: 48, color: "#D41D6D"}}/>
+                <Tooltip 
+                  placement="top" 
+                  content="See Analytics" 
+                  data-testid="analytics-tooltip"
+                >
+                  <InsightsIcon style={{fontSize: 48, color: "#D41D6D"}} data-testid="signed-out-analytics-icon"/>
                 </Tooltip>
-                <Tooltip placement="top" content="Manage Users">
-                  <PeopleIcon style={{fontSize: 48, color: "#00AE17"}}/>
+                <Tooltip 
+                  placement="top" 
+                  content="Manage Users"
+                  data-testid="users-tooltip"
+                  >
+                  <PeopleIcon style={{fontSize: 48, color: "#00AE17"}} data-testid="signed-out-users-icon"/>
                 </Tooltip>
-                <Tooltip placement="top" content="View Forms">
-                  <AssignmentIcon style={{fontSize: 48, color: "#1777F2"}}/>
+                <Tooltip 
+                  placement="top" 
+                  content="View Forms"
+                  data-testid="forms-tooltip"
+                  >
+                  <AssignmentIcon style={{fontSize: 48, color: "#1777F2"}} data-testid="signed-out-forms-icon"/>
                 </Tooltip>
-                <Tooltip placement="top" content="Monitor Changes">
-                  <EditIcon style={{fontSize: 48, color: "#AB2FD6"}}/>
+                <Tooltip 
+                  placement="top" 
+                  content="Monitor Changes"
+                  data-testid="changelog-tooltip"
+                >
+                  <EditIcon style={{fontSize: 48, color: "#AB2FD6"}} data-testid="signed-out-changelog-icon"/>
                 </Tooltip>
               </div>
-              <Button flat onClick={handleSignIn}>
+              <Button flat onClick={handleSignIn} data-testid="sign-in-button">
                 Sign In
               </Button>
             </div>
@@ -208,7 +224,7 @@ export function App() {
     <UserSitesContext.Provider value={{userSites, setUserSites}} >
     <CurrentTabContext.Provider value={{currentTab, setCurrentTab}} >
       <WLSpinnerPage dependencies={[sitesFetched]}>
-        <div className="App d-flex flex-column align-items-center w-100" data-testId="app">
+        <div className="App d-flex flex-column align-items-center w-100" data-testid="app">
           <AppContent />
         </div>
       </WLSpinnerPage>
