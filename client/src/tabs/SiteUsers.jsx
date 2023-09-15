@@ -4,7 +4,7 @@ import { Loading } from "@nextui-org/react"
 
 // Component Imports
 import NoPerms from "../components/NoPerms"
-import { CurrentSiteContext, CurrentUserContext } from '../App';
+import { CurrentSiteContext, CurrentUserContext, TestingContext } from '../App';
 import { WLSpinnerPage } from '../libraries/Web-Legos/components/Layout';
 import { sortFieldsAlphabetically } from '../libraries/Web-Legos/api/sorting';
 import { Checkbox, Paper, Table, TableBody, TableCell, TableContainer, TableHead, TableRow } from '@mui/material';
@@ -14,6 +14,7 @@ export default function SiteUsers() {
   // Get contexts
   const {currentUser} = React.useContext(CurrentUserContext);
   const {currentSite} = React.useContext(CurrentSiteContext);
+  const {isTestingEnvironment} = React.useContext(TestingContext);
 
   // Set up states
   const [usersFetched, setUsersFetched] = React.useState(false);  // Whether we've fetched site users
@@ -25,6 +26,9 @@ export default function SiteUsers() {
    * Fetch users from current site
    */
   function getUsers () {
+
+    if (isTestingEnvironment) { return; }
+
     // Get the current user's Firebase ID token
     currentUser.getIdToken(true).then(idToken => {
       /** HTTP endpoint for the GET request */
@@ -52,6 +56,9 @@ export default function SiteUsers() {
   }
 
   function getPermission() {
+
+    if (isTestingEnvironment) { return; }
+
     setPermissionFetched(false);
     // Get the current user's Firebase ID token
     currentUser.getIdToken(true).then(idToken => {
@@ -152,7 +159,7 @@ export default function SiteUsers() {
   }
   
   return (
-    <WLSpinnerPage dependencies={[usersFetched, permissionFetched]}>
+    <WLSpinnerPage dependencies={[usersFetched, permissionFetched]} data-testid="users-tab-container">
       {
       permission ?
         <div className="px-3 w-100 d-flex flex-column align-items-center justify-content-start">

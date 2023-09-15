@@ -8,6 +8,8 @@ import './libraries/Web-Legos/assets/style/layout.css';
 import { nextUiTheme } from "./assets/style/nextUiTheme";
 
 import { NextUIProvider, } from "@nextui-org/react"
+import { AvailableSite } from './libraries/Web-Legos/api/admin.ts';
+import { User } from './libraries/Web-Legos/api/auth.ts';
 
 const root = ReactDOM.createRoot(document.getElementById('root'));
 root.render(

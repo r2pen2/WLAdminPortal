@@ -53,7 +53,7 @@ export default function TabNavbar() {
     };
 
   return (
-    <AppBar position="fixed" sx={{top: "auto", bottom: 0}}>
+    <AppBar position="fixed" sx={{top: "auto", bottom: 0}} data-testid="bottom-nav">
       <BottomNavigation sx={{width: "100%"}} value={currentTab} onChange={handleChange}>
         {
           siteModules[currentSite.siteKey].sort().map((m, i) => {
@@ -64,6 +64,7 @@ export default function TabNavbar() {
                 label={tab.label}
                 value={m}
                 icon={tab.icon}
+                data-testid={`bottom-nav-button-${m}`}
               />
             )
           })

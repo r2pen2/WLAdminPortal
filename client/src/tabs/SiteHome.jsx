@@ -106,7 +106,7 @@ export default function SiteHome() {
   }
 
   return (
-    <section className="d-flex gap-2 flex-column align-items-center justify-content-center h-100">
+    <section className="d-flex gap-2 flex-column align-items-center justify-content-center h-100" data-testid="home-tab-container">
       <div onClick={() => window.open(currentSite.url, "_blank")} style={{cursor: "pointer"}}>
         <WLHeader>
           {currentSite.title}

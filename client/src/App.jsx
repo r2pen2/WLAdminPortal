@@ -12,7 +12,9 @@ import './App.css';
 
 // API Imports
 import { AvailableSite, SiteModule } from './libraries/Web-Legos/api/admin.ts';
-import { AuthenticationManager, WLPermissionsConfig } from './libraries/Web-Legos/api/auth.ts';
+import { AuthenticationManager, User, WLPermissionsConfig } from './libraries/Web-Legos/api/auth.ts';
+
+
 
 // Component Imports
 import Navbar from './components/Navbar';
@@ -35,18 +37,30 @@ export const UserSitesContext = createContext();
 export const CurrentTabContext = createContext();
 /** Context to keep track of the current tab */
 export const CurrentUserContext = createContext();
+/** Context to keep track whether we're running tests right now */
+export const TestingContext = createContext();
 
-export function App() {
+/**
+ * A testable App
+ * @param {User} testUser - A user to run tests on
+ * @param {AvailableSite[]} testSites - Test user's available sites
+ */
+export function App(props) {
+
+  /** Whether this is a testing environment */
+  const isTestingEnvironment = props.testUser || props.testSites;
 
   // Create states to place in Contexts
-  const [userSites, setUserSites] = useState([]);           // Sites that the current user can access
-  const [currentSite, setCurrentSite] = useState(null)      // The current site
-  const [currentUser, setCurrentUser] = useState(null);     // The current user
-  const [currentUserFetched, setCurrentUserFetched] = useState(false);     // The current user
-  const [currentTab, setCurrentTab] = useState("HOME");     // The current tab
-  const [sitesFetched, setSitesFetched] = useState(false);  // Whether sites have been fetched yet
+  const [userSites, setUserSites] = useState(props.testSites ? props.testSites : []);           // Sites that the current user can access
+  const [currentSite, setCurrentSite] = useState(props.testSites ? props.testSites[0] : null)   // The current site
+  const [currentUser, setCurrentUser] = useState(props.testUser ? props.testUser : null);       // The current user
+  const [currentUserFetched, setCurrentUserFetched] = useState(isTestingEnvironment);           // The current user's fetched state
+  const [currentTab, setCurrentTab] = useState("HOME");                                         // The current tab
+  const [sitesFetched, setSitesFetched] = useState(isTestingEnvironment);                       // Whether sites have been fetched yet
 
   function getUserSites() {
+    // If we're testing, don't do this
+    if (isTestingEnvironment) { return; }
 
     if (!currentUser) { return; }
     setSitesFetched(false);
@@ -65,8 +79,6 @@ export function App() {
 
   // Fetch user sites on login
   useEffect(getUserSites, [currentUser])
-
-  console.log(userSites)
 
   /**
    * Pick the right tab to render given {@link CurrentTabContext}
@@ -115,7 +127,7 @@ export function App() {
     authenticationManager.auth.onAuthStateChanged(u => {
       setCurrentUser(u);
     })
-  }, [authenticationManager.auth])
+  }, [authenticationManager.auth, isTestingEnvironment])
 
   // If ever the currentSite changes, bring us HOME
   useEffect(() => { setCurrentTab("HOME"); }, [currentSite]);
@@ -128,7 +140,7 @@ export function App() {
 
   function SignOutButton() {
     return (
-      <Button flat onClick={() => authenticationManager.auth.signOut()}>
+      <Button flat onClick={() => authenticationManager.auth.signOut()} data-testid="sign-out-button">
         Sign Out
       </Button>
     )
@@ -140,7 +152,7 @@ export function App() {
     if (!currentUser) {
       return (
         <WLSpinnerPage dependencies={[currentUserFetched]}>
-          <div className="App d-flex flex-column align-items-center justify-content-center" style={{height: "100vh"}}>
+          <div data-testid="signed-out-page" className="App d-flex flex-column align-items-center justify-content-center" style={{height: "100vh"}}>
             <div className="app-content gap-2 d-flex flex-column align-items-center justify-content-center">
               <WLHeader data-testid="signed-out-header">
                 joed.dev Admin Portal
@@ -149,28 +161,28 @@ export function App() {
                 <Tooltip 
                   placement="top" 
                   content="See Analytics" 
-                  data-testid="analytics-tooltip"
+                  data-testid="signed-out-analytics-tooltip"
                 >
                   <InsightsIcon style={{fontSize: 48, color: "#D41D6D"}} data-testid="signed-out-analytics-icon"/>
                 </Tooltip>
                 <Tooltip 
                   placement="top" 
                   content="Manage Users"
-                  data-testid="users-tooltip"
+                  data-testid="signed-out-users-tooltip"
                   >
                   <PeopleIcon style={{fontSize: 48, color: "#00AE17"}} data-testid="signed-out-users-icon"/>
                 </Tooltip>
                 <Tooltip 
                   placement="top" 
                   content="View Forms"
-                  data-testid="forms-tooltip"
+                  data-testid="signed-out-forms-tooltip"
                   >
                   <AssignmentIcon style={{fontSize: 48, color: "#1777F2"}} data-testid="signed-out-forms-icon"/>
                 </Tooltip>
                 <Tooltip 
                   placement="top" 
                   content="Monitor Changes"
-                  data-testid="changelog-tooltip"
+                  data-testid="signed-out-changelog-tooltip"
                 >
                   <EditIcon style={{fontSize: 48, color: "#AB2FD6"}} data-testid="signed-out-changelog-icon"/>
                 </Tooltip>
@@ -188,9 +200,9 @@ export function App() {
       // If there's no current site, the user isn't authorized on any sites.
       return (
         <WLSpinnerPage dependencies={[sitesFetched]}>
-          <div className="App d-flex flex-column align-items-center justify-content-center" style={{height: "100vh"}}>
+          <div data-testid="signed-in-no-sites-page" className="App d-flex flex-column align-items-center justify-content-center" style={{height: "100vh"}}>
             <div className="app-content gap-2 d-flex flex-column align-items-center justify-content-center">
-              <SentimentDissatisfiedIcon sx={{fontSize: 128}}/>
+              <SentimentDissatisfiedIcon sx={{fontSize: 128}} data-testid="signed-in-no-sites-glyph"/>
               <WLHeader>
                 Oh no!
               </WLHeader>
@@ -208,17 +220,20 @@ export function App() {
     }
     
     return (
-      <Navbar />,
-      <div className="app-content">
-        { renderTab() }
-      </div>,
-      <SignOutButton />,
-      <TabNavbar />
+      <div data-testid="signed-in-no-sites-page" className="App d-flex flex-column align-items-center justify-content-center" style={{height: "100vh", width: "100%"}}>
+        <Navbar />
+        <div className="app-content" data-testid="signed-in-tab-container">
+          { renderTab() }
+        </div>
+        <SignOutButton />
+        <TabNavbar />
+      </div>
     )
   }
 
   // Admin portal let's goooooooo
   return (
+    <TestingContext.Provider value={{isTestingEnvironment}} >
     <CurrentUserContext.Provider value={{currentUser, setCurrentUser}} >
     <CurrentSiteContext.Provider value={{currentSite, setCurrentSite}} >
     <UserSitesContext.Provider value={{userSites, setUserSites}} >
@@ -232,6 +247,7 @@ export function App() {
     </UserSitesContext.Provider>
     </CurrentSiteContext.Provider>
     </CurrentUserContext.Provider>
+    </TestingContext.Provider>
   );
 }
 

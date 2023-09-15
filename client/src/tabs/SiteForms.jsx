@@ -8,7 +8,7 @@ import { DataGrid } from "@mui/x-data-grid"
 import { FormResponse, SiteModule } from '../libraries/Web-Legos/api/admin.ts';
 
 // Component Imports
-import { CurrentSiteContext, CurrentUserContext } from '../App';
+import { CurrentSiteContext, CurrentUserContext, TestingContext } from '../App';
 import { WLSpinnerPage } from '../libraries/Web-Legos/components/Layout';
 import { WLDateTime, getSlashDateString, getTimeOfDay } from '../libraries/Web-Legos/api/strings';
 import NoPerms from '../components/NoPerms.jsx';
@@ -25,6 +25,7 @@ export default function SiteForms() {
   // Get context
   const {currentUser} = React.useContext(CurrentUserContext);
   const {currentSite} = React.useContext(CurrentSiteContext);
+  const {isTestingEnvironment} = React.useContext(TestingContext);
 
   // Create states
   const [formResponsesFetched, setFormResponsesFetched] = React.useState(false);  // Whether form responses have been fetched from the site
@@ -37,6 +38,9 @@ export default function SiteForms() {
    * Fetch form responses from current site
    */
   function fetchForms() {
+    
+    if (isTestingEnvironment) { return; }
+
     // Get the current user's Firebase ID token
     currentUser.getIdToken(true).then(idToken => {
       /** HTTP endpoint for the GET request */
@@ -66,6 +70,9 @@ export default function SiteForms() {
   }  
 
   function getPermission() {
+
+    if (isTestingEnvironment) { return; }
+
     setPermissionFetched(false);
     // Get the current user's Firebase ID token
     currentUser.getIdToken(true).then(idToken => {
@@ -238,7 +245,7 @@ export default function SiteForms() {
 
   // Once form responses have been fetched, render them in a DataGrid.
   return (
-    <WLSpinnerPage dependencies={[formResponsesFetched, permissionFetched]}>
+    <WLSpinnerPage dependencies={[formResponsesFetched, permissionFetched]} data-testid="forms-tab-container">
       {permission ? renderResponses() : <NoPerms />}
     </WLSpinnerPage>
   )

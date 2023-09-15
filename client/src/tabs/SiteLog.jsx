@@ -5,7 +5,7 @@ import { Text } from '@nextui-org/react';
 
 export default function SiteLog() {
   return (
-    <div className="px-3 w-100 d-flex flex-column align-items-center justify-content-start">
+    <div className="px-3 w-100 d-flex flex-column align-items-center justify-content-start" data-testid="log-tab-container">
       <EditIcon style={{fontSize: 128, color: "#AB2FD6"}}/>
       <WLHeader>
         Changelog is coming soon!

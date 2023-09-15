@@ -5,7 +5,7 @@ import { Text } from '@nextui-org/react';
 
 export default function SiteAnalytics() {
   return (
-    <div className="px-3 w-100 d-flex flex-column align-items-center justify-content-start">
+    <div className="px-3 w-100 d-flex flex-column align-items-center justify-content-start" data-testid="analytics-tab-container">
       <InsightsIcon style={{fontSize: 128, color: "#D41D6D"}}/>
       <WLHeader>
         Analytics are coming soon!
