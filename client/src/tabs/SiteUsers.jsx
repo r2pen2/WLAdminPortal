@@ -9,7 +9,7 @@ import { WLSpinnerPage } from '../libraries/Web-Legos/components/Layout';
 import { sortFieldsAlphabetically } from '../libraries/Web-Legos/api/sorting';
 import { Checkbox, Paper, Table, TableBody, TableCell, TableContainer, TableHead, TableRow } from '@mui/material';
 
-export default function SiteUsers() {
+export default function SiteUsers(props) {
   
   // Get contexts
   const {currentUser} = React.useContext(CurrentUserContext);
@@ -17,10 +17,10 @@ export default function SiteUsers() {
   const {isTestingEnvironment} = React.useContext(TestingContext);
 
   // Set up states
-  const [usersFetched, setUsersFetched] = React.useState(false);  // Whether we've fetched site users
-  const [users, setUsers] = React.useState([]);                   // List of site users
-  const [permissionFetched, setPermissionFetched] = React.useState(false) // Whether we know if this user has permission to view this page
-  const [permission, setPermission] = React.useState(false)       // Whether user can view this page
+  const [usersFetched, setUsersFetched] = React.useState(false);                    // Whether we've fetched site users
+  const [users, setUsers] = React.useState(props.siteUsers ? props.siteUsers : []); // List of site users
+  const [permissionFetched, setPermissionFetched] = React.useState(false)           // Whether we know if this user has permission to view this page
+  const [permission, setPermission] = React.useState(false)                         // Whether user can view this page
 
   /**
    * Fetch users from current site
@@ -57,7 +57,11 @@ export default function SiteUsers() {
 
   function getPermission() {
 
-    if (isTestingEnvironment) { return; }
+    if (isTestingEnvironment) { 
+      setPermissionFetched(true)
+      setPermission(props.testPermission)
+      return; 
+    }
 
     setPermissionFetched(false);
     // Get the current user's Firebase ID token
@@ -141,7 +145,7 @@ export default function SiteUsers() {
     if (!users[0]) { return; }
 
     return (
-      <TableHead>
+      <TableHead data-testid="site-users-table-header">
         <TableRow>
           <TableCell align="center" colSpan={2}>User Details</TableCell>
           <TableCell align="center" colSpan={Object.keys(users[0].permissions).length}>Permissions</TableCell>

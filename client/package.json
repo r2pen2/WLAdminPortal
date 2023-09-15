@@ -1,5 +1,5 @@
 {
-  "name": "btb-client",
+  "name": "wladminportal",
   "version": "0.1.0",
   "private": true,
   "dependencies": {
@@ -15,6 +15,7 @@
     "bootstrap": "^5.2.3",
     "canvas-confetti": "^1.6.0",
     "deps": "^1.0.0",
+    "enzyme": "^3.11.0",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "react-google-recaptcha": "^3.1.0",

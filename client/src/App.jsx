@@ -238,11 +238,14 @@ export function App(props) {
     <CurrentSiteContext.Provider value={{currentSite, setCurrentSite}} >
     <UserSitesContext.Provider value={{userSites, setUserSites}} >
     <CurrentTabContext.Provider value={{currentTab, setCurrentTab}} >
-      <WLSpinnerPage dependencies={[sitesFetched]}>
-        <div className="App d-flex flex-column align-items-center w-100" data-testid="app">
-          <AppContent />
-        </div>
-      </WLSpinnerPage>
+      { 
+        props.children ? props.children : 
+        <WLSpinnerPage dependencies={[sitesFetched]}>
+          <div className="App d-flex flex-column align-items-center w-100" data-testid="app">
+            <AppContent />
+          </div>
+        </WLSpinnerPage>
+      }
     </CurrentTabContext.Provider>
     </UserSitesContext.Provider>
     </CurrentSiteContext.Provider>
